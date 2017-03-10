@@ -1,9 +1,11 @@
 import json
+import tempfile
+
+from httmock import urlmatch, HTTMock
 
 from mass_api_client.resources import DomainSample, IPSample, URISample, FileSample, ExecutableBinarySample
-from tests.serialization_test_case import SerializationTestCase
 from tests.httmock_test_case import HTTMockTestCase
-from httmock import urlmatch, HTTMock
+from tests.serialization_test_case import SerializationTestCase
 
 
 class DomainSampleTestCase(SerializationTestCase):
@@ -48,10 +50,9 @@ class FileSampleTestCase(SerializationTestCase, HTTMockTestCase):
         file_sample = FileSample._create_instance_from_data(data)
         with HTTMock(mass_mock):
             with file_sample.temporary_file() as f:
-                self.assertEqual(f.name[:4], '/tmp')
+                self.assertTrue(isinstance(f, tempfile._TemporaryFileWrapper))
                 f.seek(0)
                 self.assertEqual(f.read(), b'Content')
-
 
 
 class ExecutableBinarySampleTestCase(SerializationTestCase):
