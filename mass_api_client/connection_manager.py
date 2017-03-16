@@ -63,6 +63,8 @@ class Connection:
 
         r = requests.post(url, headers=headers, params=params, files=files)
         r.raise_for_status()
+        if r.status_code == 204:
+            return dict()
         return r.json()
 
 
