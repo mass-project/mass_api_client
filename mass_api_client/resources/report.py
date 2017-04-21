@@ -21,6 +21,15 @@ class Report(BaseResource):
 
     @classmethod
     def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None):
+        """
+        Create a new report.
+
+        :param scheduled_analysis: The `ScheduledAnalysis` this report was created for
+        :param tags: A list of strings
+        :param json_report_objects: TODO
+        :param raw_report_objects: TODO
+        :return: The newly created report object
+        """
         if tags is None:
             tags = []
 
@@ -28,9 +37,21 @@ class Report(BaseResource):
         return cls._create(url=url, additional_json_files=json_report_objects, additional_binary_files=raw_report_objects, tags=tags)
 
     def get_json_report_object(self, key):
+        """
+        Retrieve a JSON report object of the report.
+
+        :param key: The key of the report object
+        :return: The deserialized JSON report object.
+        """
         cm = ConnectionManager()
         return cm.get_json(self.json_report_objects[key], append_base_url=False)
 
     def download_raw_report_object_to_file(self, key, file):
+        """
+        Download a raw report object and store it in a file.
+
+        :param key: The key of the report object
+        :param file: A `file` object to store the report object.
+        """
         cm = ConnectionManager()
-        return cm.download_to_file(self.raw_report_objects[key], file, append_base_url=False)
+        cm.download_to_file(self.raw_report_objects[key], file, append_base_url=False)

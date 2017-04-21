@@ -88,6 +88,11 @@ class BaseResource:
 
     @classmethod
     def get(cls, identifier):
+        """
+        Fetch a single object.
+        :param identifier: The unique identifier of the object
+        :return: The retrieved object
+        """
         return cls._get_detail_from_url('{}/{}/'.format(cls.endpoint, identifier))
 
     @classmethod
@@ -100,6 +105,13 @@ class BaseResource:
 
     @classmethod
     def query(cls, **kwargs):
+        """
+        Query multiple objects.
+
+        :param kwargs: The query parameters. The key is the filter parameter and the value is the value to search for.
+        :return: The list of matching objects
+        :raises A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
+        """
         params = cls.default_filters
 
         for key, value in kwargs.items():

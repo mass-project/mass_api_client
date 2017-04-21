@@ -103,8 +103,12 @@ class FileSample(Sample):
         return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level)
 
     def download_to_file(self, file):
+        """
+        Downloads and stores the file of the sample.
+        :param file: A `file` object to store the file.
+        """
         cm = ConnectionManager()
-        return cm.download_to_file(self.file, file, append_base_url=False)
+        cm.download_to_file(self.file, file, append_base_url=False)
 
 
 class ExecutableBinarySample(FileSample):
