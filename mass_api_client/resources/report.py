@@ -20,12 +20,17 @@ class Report(BaseResource):
         return self.__repr__()
 
     @classmethod
-    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None):
+    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None):
         if tags is None:
             tags = []
 
+        if additional_metadata is None:
+            additional_metadata = {}
+
         url = cls.creation_point.format(scheduled_analysis=scheduled_analysis.id)
-        return cls._create(url=url, additional_json_files=json_report_objects, additional_binary_files=raw_report_objects, tags=tags)
+        return cls._create(url=url, additional_json_files=json_report_objects,
+                           additional_binary_files=raw_report_objects, tags=tags,
+                           additional_metadata=additional_metadata, force_multipart=True)
 
     def get_json_report_object(self, key):
         cm = ConnectionManager()

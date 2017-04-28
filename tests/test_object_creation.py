@@ -21,6 +21,7 @@ class ObjectCreationTestCase(HTTMockTestCase):
 
         @urlmatch(netloc=r'localhost', path=path)
         def mass_mock_creation(url, request):
+            print(request.body)
             self.assertAuthorized(request)
             self.assertEqual(json.loads(request.body), data)
             return json.dumps(response_data)
@@ -95,3 +96,18 @@ class ObjectCreationTestCase(HTTMockTestCase):
             data = {'tlp_level': 0}
             self.assertCorrectHTTPDetailCreationWithFile(FileSample, r'/api/sample/submit_file/', data,
                                                          'tests/data/file_sample.json', 'test_data', file)
+
+    def test_creating_analysis_request(self):
+        data = {
+            'analysis_system': self.analysis_system,
+            'sample': self.file_sample
+            }
+
+        @urlmatch()
+        def mass_server(url, request):
+            return open('tests/data/analysis_request.json', 'r').read()
+
+        with HTTMock(mass_server):
+            analysis_request = AnalysisRequest.create(self.file_sample, self.analysis_system)
+            data = json.load(open('tests/data/analysis_request.json', 'r'))
+            self.assertEqual(data, analysis_request._to_json())

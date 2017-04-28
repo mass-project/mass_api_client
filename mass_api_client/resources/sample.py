@@ -1,7 +1,9 @@
 from mass_api_client.connection_manager import ConnectionManager
-from mass_api_client.resources import Report
+from mass_api_client.resources.report import Report
 from mass_api_client.schemas import DomainSampleSchema, IPSampleSchema, URISampleSchema, FileSampleSchema, ExecutableBinarySampleSchema
 from .base_with_subclasses import BaseWithSubclasses
+from contextlib import contextmanager
+import tempfile
 
 
 class Sample(BaseWithSubclasses):
@@ -105,6 +107,13 @@ class FileSample(Sample):
     def download_to_file(self, file):
         cm = ConnectionManager()
         return cm.download_to_file(self.file, file, append_base_url=False)
+
+    @contextmanager
+    def temporary_file(self):
+        tmp = tempfile.NamedTemporaryFile()
+        self.download_to_file(tmp)
+        yield tmp
+        tmp.close()
 
 
 class ExecutableBinarySample(FileSample):

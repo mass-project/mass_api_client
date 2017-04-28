@@ -46,7 +46,7 @@ class RetrievedBySampleRelation(SampleRelation):
     creation_point = 'sample_relation/submit_retrieved_by'
 
 
-class SsdeepRelation(SampleRelation):
+class SsdeepSampleRelation(SampleRelation):
     schema = SsdeepSampleRelationSchema()
-    _class_identifier = 'SampleRelation.SsdeepRelation'
+    _class_identifier = 'SampleRelation.SsdeepSampleRelation'
     creation_point = 'sample_relation/submit_ssdeep'
