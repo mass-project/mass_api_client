@@ -25,6 +25,7 @@ class Connection:
                 if not block:
                     break
                 file.write(block)
+            file.flush()
 
     def get_json(self, url, append_base_url, params):
         if append_base_url:

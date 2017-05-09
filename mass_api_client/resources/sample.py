@@ -1,9 +1,10 @@
+import tempfile
+from contextlib import contextmanager
+
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.resources.report import Report
 from mass_api_client.schemas import DomainSampleSchema, IPSampleSchema, URISampleSchema, FileSampleSchema, ExecutableBinarySampleSchema
 from .base_with_subclasses import BaseWithSubclasses
-from contextlib import contextmanager
-import tempfile
 
 
 class Sample(BaseWithSubclasses):
@@ -110,10 +111,9 @@ class FileSample(Sample):
 
     @contextmanager
     def temporary_file(self):
-        tmp = tempfile.NamedTemporaryFile()
-        self.download_to_file(tmp)
-        yield tmp
-        tmp.close()
+        with tempfile.NamedTemporaryFile() as tmp:
+            self.download_to_file(tmp)
+            yield tmp
 
 
 class ExecutableBinarySample(FileSample):
