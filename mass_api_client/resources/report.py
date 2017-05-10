@@ -13,6 +13,10 @@ class Report(BaseResource):
     endpoint = 'report'
     creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
 
+    def __init__(self, **kwargs):
+        super(Report, self).__init__(**kwargs)
+        self._json_reports_cache = None
+
     def __repr__(self):
         return '[Report] {} on {}'.format(self.sample, self.analysis_system)
 
@@ -31,6 +35,16 @@ class Report(BaseResource):
         return cls._create(url=url, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, force_multipart=True)
+
+    @property
+    def json_reports(self):
+        if self._json_reports_cache:
+            return self._json_reports_cache
+
+        self._json_reports_cache = {}
+        for key in self.json_report_objects.keys():
+            self._json_reports_cache[key] = self.get_json_report_object(key)
+        return self._json_reports_cache
 
     def get_json_report_object(self, key):
         cm = ConnectionManager()
