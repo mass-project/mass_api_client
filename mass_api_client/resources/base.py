@@ -56,7 +56,10 @@ class BaseResource:
             deserialized = cls._deserialize(res['results'], many=True)
             for data in deserialized:
                 yield cls._create_instance_from_data(data)
-            next_url = res['next']
+            try:
+                next_url = res['next']
+            except KeyError:
+                raise StopIteration
             append_base_url = False
 
     @classmethod
@@ -71,13 +74,13 @@ class BaseResource:
         return objects
 
     @classmethod
-    def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, **kwargs):
+    def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, **kwargs):
         cm = ConnectionManager()
         if not url:
             url = '{}/'.format(cls.creation_point)
         serialized, errors = cls.schema.dump(kwargs)
 
-        if additional_binary_files or additional_json_files:
+        if additional_binary_files or additional_json_files or force_multipart:
             response_data = cm.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
         else:
             response_data = cm.post_json(url, serialized)
