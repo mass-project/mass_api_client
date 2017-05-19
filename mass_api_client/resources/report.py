@@ -24,6 +24,8 @@ class Report(BaseResource):
         """
         Create a new report.
 
+        For convenience `ScheduledAnalysis.create_report()` can be used instead.
+
         :param scheduled_analysis: The `ScheduledAnalysis` this report was created for
         :param tags: A list of strings
         :param json_report_objects: TODO
