@@ -26,8 +26,8 @@ class ScheduledAnalysis(BaseResource):
         """
         Create a report and remove the ScheduledAnalysis from the server.
 
-        :param json_report_objects: TODO
-        :param raw_report_objects: TODO
+        :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
+        :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
         :param tags: A list of strings.
         :return: The created report object.
         """

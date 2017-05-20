@@ -13,9 +13,9 @@ class AnalysisSystem(BaseResource):
         """
         Create a new `AnalysisSystem` on the server.
 
-        :param identifier_name:
-        :param verbose_name:
-        :param tag_filter_expression:
+        :param identifier_name: Unique identifier string.
+        :param verbose_name: A descriptive name of the AnalysisSystem.
+        :param tag_filter_expression: Tag filters to automatically select samples for this AnalysisSystem.
         :return: The created `AnalysisSystem` object.
         """
         return cls._create(identifier_name=identifier_name, verbose_name=verbose_name, tag_filter_expression=tag_filter_expression)

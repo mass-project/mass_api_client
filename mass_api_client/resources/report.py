@@ -28,8 +28,8 @@ class Report(BaseResource):
 
         :param scheduled_analysis: The `ScheduledAnalysis` this report was created for
         :param tags: A list of strings
-        :param json_report_objects: TODO
-        :param raw_report_objects: TODO
+        :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
+        :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
         :return: The newly created report object
         """
         if tags is None:
