@@ -4,6 +4,6 @@ from setuptools import setup, find_packages
 
 setup(name='mass_api_client',
       version=0.1,
-      install_requires=['requests==2.16.0', 'marshmallow==2.13.5'],
+      install_requires=['requests==2.16.4', 'marshmallow==2.13.5'],
       packages=find_packages(),
      )
