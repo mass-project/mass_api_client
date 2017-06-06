@@ -103,7 +103,7 @@ class BaseResource:
 
     @classmethod
     def query(cls, **kwargs):
-        params = cls.default_filters
+        params = dict(cls.default_filters)
 
         for key, value in kwargs.items():
             if key in cls.filter_parameters:
