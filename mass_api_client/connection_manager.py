@@ -72,10 +72,16 @@ class Connection:
 class ConnectionManager:
     _connections = {}
 
-    def _check_default_connection(self):
-        if 'default' not in self._connections:
-            raise RuntimeError("Default connection is not defined. "
-                               "Use ConnectionManager().register_connection(...) with alias 'default' to do so.")
+    def __init__(self, selected_connection_alias='default'):
+        self.selected_connection_alias = selected_connection_alias
+
+    def get_connection(self):
+        alias = self.selected_connection_alias
+        if alias not in self._connections:
+            raise RuntimeError("Connection '{}' is not defined. "
+                               "Use ConnectionManager().register_connection(...) to do so.".format(alias))
+
+        return self._connections[alias]
 
     def register_connection(self, alias, api_key, base_url):
         self._connections[alias] = Connection(api_key, base_url)
@@ -84,22 +90,19 @@ class ConnectionManager:
         if params is None:
             params = {}
 
-        self._check_default_connection()
-        self._connections['default'].download_to_file(url, file, append_base_url, params)
+        self.get_connection().download_to_file(url, file, append_base_url, params)
 
     def get_json(self, url, append_base_url=True, params=None):
         if params is None:
             params = {}
 
-        self._check_default_connection()
-        return self._connections['default'].get_json(url, append_base_url, params)
+        return self.get_connection().get_json(url, append_base_url, params)
 
     def post_json(self, url, data, append_base_url=True, params=None):
         if params is None:
             params = {}
 
-        self._check_default_connection()
-        return self._connections['default'].post_json(url, data, append_base_url, params)
+        return self.get_connection().post_json(url, data, append_base_url, params)
 
     def post_multipart(self, url, metadata, append_base_url=True, params=None, json_files=None, binary_files=None):
         if binary_files is None:
@@ -109,6 +112,19 @@ class ConnectionManager:
         if params is None:
             params = {}
 
-        self._check_default_connection()
-        return self._connections['default'].post_multipart(url, metadata, append_base_url, params, json_files,
-                                                           binary_files)
+        return self.get_connection().post_multipart(url, metadata, append_base_url, params, json_files,
+                                                    binary_files)
+
+
+class switch_connection:
+    def __init__(self, resource, connection_alias):
+        self.resource = resource
+        self.previous_alias = resource.connection_alias
+        self.connection_alias = connection_alias
+
+    def __enter__(self):
+        self.resource.connection_alias = self.connection_alias
+        return self.resource
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.resource.connection_alias = self.previous_alias
