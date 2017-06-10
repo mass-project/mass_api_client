@@ -19,7 +19,10 @@ class Connection:
         r.raise_for_status()
         return r
 
-    def download_to_file(self, url, file, append_base_url, params):
+    def download_to_file(self, url, file, append_base_url=True, params=None):
+        if params is None:
+            params = {}
+
         with closing(self.get_stream(url, append_base_url, params)) as r:
             for block in r.iter_content(1024):
                 if not block:
@@ -27,7 +30,10 @@ class Connection:
                 file.write(block)
             file.flush()
 
-    def get_json(self, url, append_base_url, params):
+    def get_json(self, url, append_base_url=True, params=None):
+        if params is None:
+            params = {}
+
         if append_base_url:
             url = self._base_url + url
 
@@ -35,7 +41,10 @@ class Connection:
         r.raise_for_status()
         return r.json()
 
-    def post_json(self, url, data, append_base_url, params):
+    def post_json(self, url, data, append_base_url=True, params=None):
+        if params is None:
+            params = {}
+
         if append_base_url:
             url = self._base_url + url
 
@@ -43,7 +52,9 @@ class Connection:
         r.raise_for_status()
         return r.json()
 
-    def post_multipart(self, url, metadata, append_base_url, params, json_files=None, binary_files=None):
+    def post_multipart(self, url, metadata, append_base_url=True, params=None, json_files=None, binary_files=None):
+        if params is None:
+            params = {}
         if binary_files is None:
             binary_files = {}
         if json_files is None:
@@ -72,11 +83,7 @@ class Connection:
 class ConnectionManager:
     _connections = {}
 
-    def __init__(self, selected_connection_alias='default'):
-        self.selected_connection_alias = selected_connection_alias
-
-    def get_connection(self):
-        alias = self.selected_connection_alias
+    def get_connection(self, alias):
         if alias not in self._connections:
             raise RuntimeError("Connection '{}' is not defined. "
                                "Use ConnectionManager().register_connection(...) to do so.".format(alias))
@@ -85,35 +92,6 @@ class ConnectionManager:
 
     def register_connection(self, alias, api_key, base_url):
         self._connections[alias] = Connection(api_key, base_url)
-
-    def download_to_file(self, url, file, append_base_url=True, params=None):
-        if params is None:
-            params = {}
-
-        self.get_connection().download_to_file(url, file, append_base_url, params)
-
-    def get_json(self, url, append_base_url=True, params=None):
-        if params is None:
-            params = {}
-
-        return self.get_connection().get_json(url, append_base_url, params)
-
-    def post_json(self, url, data, append_base_url=True, params=None):
-        if params is None:
-            params = {}
-
-        return self.get_connection().post_json(url, data, append_base_url, params)
-
-    def post_multipart(self, url, metadata, append_base_url=True, params=None, json_files=None, binary_files=None):
-        if binary_files is None:
-            binary_files = {}
-        if json_files is None:
-            json_files = {}
-        if params is None:
-            params = {}
-
-        return self.get_connection().post_multipart(url, metadata, append_base_url, params, json_files,
-                                                    binary_files)
 
 
 class switch_connection:

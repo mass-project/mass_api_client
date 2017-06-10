@@ -15,7 +15,7 @@ class MASSApiTestCase(HTTMockTestCase):
             return json.dumps(self.example_data)
 
         with HTTMock(mass_mock_get_json):
-            response = self.cm.get_json('http://localhost/api/json', append_base_url=False)
+            response = self.connection.get_json('http://localhost/api/json', append_base_url=False)
 
         self.assertEqual(self.example_data, response)
 
@@ -27,7 +27,7 @@ class MASSApiTestCase(HTTMockTestCase):
             return json.dumps(self.example_data)
 
         with HTTMock(mass_mock_post_json):
-            response = self.cm.post_json('http://localhost/api/json', append_base_url=False, data=self.example_data)
+            response = self.connection.post_json('http://localhost/api/json', append_base_url=False, data=self.example_data)
 
         self.assertEqual(self.example_data, response)
 
@@ -42,8 +42,8 @@ class MASSApiTestCase(HTTMockTestCase):
 
             with HTTMock(mass_mock_post_file):
                 files = {'file': ('test_data', data_file)}
-                response = self.cm.post_multipart('http://localhost/api/json', append_base_url=False,
-                                                  metadata=self.example_data, binary_files=files)
+                response = self.connection.post_multipart('http://localhost/api/json', append_base_url=False,
+                                                          metadata=self.example_data, binary_files=files)
 
         self.assertEqual(self.example_data, response)
 
@@ -55,10 +55,10 @@ class MASSApiTestCase(HTTMockTestCase):
 
         with HTTMock(mass_mock_forbidden):
             self.assertRaises(requests.exceptions.HTTPError,
-                              lambda: self.cm.get_json('http://localhost/api/json', append_base_url=False))
+                              lambda: self.connection.get_json('http://localhost/api/json', append_base_url=False))
             self.assertRaises(requests.exceptions.HTTPError,
-                              lambda: self.cm.post_json('http://localhost/api/json', self.example_data,
-                                                        append_base_url=False))
+                              lambda: self.connection.post_json('http://localhost/api/json', self.example_data,
+                                                                append_base_url=False))
 
     def test_downloading_file(self):
         test_file_path = 'tests/data/test_data'
@@ -71,6 +71,6 @@ class MASSApiTestCase(HTTMockTestCase):
             return content
 
         with HTTMock(mass_mock_file), tempfile.TemporaryFile() as tmpfile, open(test_file_path, 'rb') as data_file:
-            self.cm.download_to_file('file', tmpfile)
+            self.connection.download_to_file('file', tmpfile)
             tmpfile.seek(0)
             self.assertEqual(data_file.read(), tmpfile.read())

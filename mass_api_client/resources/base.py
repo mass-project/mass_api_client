@@ -44,18 +44,18 @@ class BaseResource:
 
     @classmethod
     def _get_detail_from_url(cls, url, append_base_url=True):
-        cm = ConnectionManager(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls.connection_alias)
 
-        deserialized = cls._deserialize(cm.get_json(url, append_base_url=append_base_url))
+        deserialized = cls._deserialize(con.get_json(url, append_base_url=append_base_url))
         return cls._create_instance_from_data(deserialized)
 
     @classmethod
     def _get_iter_from_url(cls, url, params={}, append_base_url=True):
-        cm = ConnectionManager(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls.connection_alias)
         next_url = url
 
         while next_url is not None:
-            res = cm.get_json(next_url, params=params, append_base_url=append_base_url)
+            res = con.get_json(next_url, params=params, append_base_url=append_base_url)
             deserialized = cls._deserialize(res['results'], many=True)
             for data in deserialized:
                 yield cls._create_instance_from_data(data)
@@ -70,23 +70,23 @@ class BaseResource:
         if params is None:
             params = {}
 
-        cm = ConnectionManager(cls.connection_alias)
-        deserialized = cls._deserialize(cm.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
+        con = ConnectionManager().get_connection(cls.connection_alias)
+        deserialized = cls._deserialize(con.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
         objects = [cls._create_instance_from_data(detail) for detail in deserialized]
 
         return objects
 
     @classmethod
     def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, **kwargs):
-        cm = ConnectionManager(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls.connection_alias)
         if not url:
             url = '{}/'.format(cls.creation_point)
         serialized, errors = cls.schema.dump(kwargs)
 
         if additional_binary_files or additional_json_files or force_multipart:
-            response_data = cm.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
+            response_data = con.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
         else:
-            response_data = cm.post_json(url, serialized)
+            response_data = con.post_json(url, serialized)
 
         deserialized = cls._deserialize(response_data)
 
