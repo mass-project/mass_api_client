@@ -1,7 +1,7 @@
 from .resources import BaseResource, BaseWithSubclasses
 
 
-class switch_connection:
+class SwitchConnection:
     def __init__(self, resource, connection_alias):
         self.resource = resource
         self.connection_alias = connection_alias
