@@ -34,7 +34,7 @@ class SwitchConnection:
             @classmethod
             def _create_instance_from_data(cls, data):
                 subcls = cls._unmodified_cls._search_subclass(data['_cls'])
-                return subcls(subcls.connection_alias, **data)
+                return subcls(cls.connection_alias, **data)
 
             @classmethod
             def _deserialize(cls, data, many=False):
