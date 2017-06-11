@@ -33,9 +33,9 @@ class Report(BaseResource):
                            additional_metadata=additional_metadata, force_multipart=True)
 
     def get_json_report_object(self, key):
-        cm = ConnectionManager()
-        return cm.get_json(self.json_report_objects[key], append_base_url=False)
+        con = ConnectionManager().get_connection(self.connection_alias)
+        return con.get_json(self.json_report_objects[key], append_base_url=False)
 
     def download_raw_report_object_to_file(self, key, file):
-        cm = ConnectionManager()
-        return cm.download_to_file(self.raw_report_objects[key], file, append_base_url=False)
+        con = ConnectionManager().get_connection(self.connection_alias)
+        return con.download_to_file(self.raw_report_objects[key], file, append_base_url=False)

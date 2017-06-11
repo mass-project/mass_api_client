@@ -106,8 +106,8 @@ class FileSample(Sample):
         return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level)
 
     def download_to_file(self, file):
-        cm = ConnectionManager().get_connection(self.connection_alias)
-        return cm.download_to_file(self.file, file, append_base_url=False)
+        con = ConnectionManager().get_connection(self.connection_alias)
+        return con.download_to_file(self.file, file, append_base_url=False)
 
     @contextmanager
     def temporary_file(self):
