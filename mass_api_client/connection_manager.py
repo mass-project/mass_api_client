@@ -106,15 +106,3 @@ class ConnectionManager:
         self._connections[alias] = Connection(api_key, base_url, timeout)
 
 
-class switch_connection:
-    def __init__(self, resource, connection_alias):
-        self.resource = resource
-        self.previous_alias = resource.connection_alias
-        self.connection_alias = connection_alias
-
-    def __enter__(self):
-        self.resource.connection_alias = self.connection_alias
-        return self.resource
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.resource.connection_alias = self.previous_alias

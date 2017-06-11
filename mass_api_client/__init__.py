@@ -1,2 +1,3 @@
 import mass_api_client.resources
-from mass_api_client.connection_manager import ConnectionManager, switch_connection
+from mass_api_client.connection_manager import ConnectionManager
+from mass_api_client.switch_connection import switch_connection
