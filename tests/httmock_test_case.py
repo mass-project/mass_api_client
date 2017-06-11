@@ -8,8 +8,10 @@ class HTTMockTestCase(unittest.TestCase):
         self.api_key = '1234567890abcdef'
         self.base_url = 'http://localhost/api/'
         self.example_data = {'lorem': 'ipsum', 'integer': 1}
-        ConnectionManager().register_connection(api_key=self.api_key, base_url=self.base_url, alias='default')
-        self.connection = ConnectionManager().get_connection('default')
+        cm = ConnectionManager()
+        cm.register_connection(api_key=self.api_key, base_url=self.base_url, alias='default')
+        cm.register_connection(api_key=self.api_key, base_url='http://notlocalhost/api/', alias='secondary')
+        self.connection = cm.get_connection('default')
 
     def assertAuthorized(self, request):
         self.assertEqual(request.headers['Authorization'], 'APIKEY {}'.format(self.api_key))
