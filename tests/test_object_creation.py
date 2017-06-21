@@ -93,7 +93,7 @@ class ObjectCreationTestCase(HTTMockTestCase):
 
     def test_creating_file_sample(self):
         with open('tests/data/test_data', 'rb') as file:
-            data = {'tlp_level': 0}
+            data = {'tlp_level': 0, 'tags': []}
             self.assertCorrectHTTPDetailCreationWithFile(FileSample, r'/api/sample/submit_file/', data,
                                                          'tests/data/file_sample.json', 'test_data', file)
 
