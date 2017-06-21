@@ -50,7 +50,10 @@ class BaseResource:
         return cls._create_instance_from_data(deserialized)
 
     @classmethod
-    def _get_iter_from_url(cls, url, params={}, append_base_url=True):
+    def _get_iter_from_url(cls, url, params=None, append_base_url=True):
+        if params is None:
+            params = {}
+
         con = ConnectionManager().get_connection(cls.connection_alias)
         next_url = url
 
@@ -117,7 +120,7 @@ class BaseResource:
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_list_from_url('{}/'.format(cls.endpoint), params=params)
+        return cls._get_iter_from_url('{}/'.format(cls.endpoint), params=params)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
