@@ -102,8 +102,8 @@ class FileSample(Sample):
     ]
 
     @classmethod
-    def create(cls, filename, file, tlp_level=0):
-        return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level)
+    def create(cls, filename, file, tlp_level=0, tags=[]):
+        return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags)
 
     def download_to_file(self, file):
         con = ConnectionManager().get_connection(self.connection_alias)

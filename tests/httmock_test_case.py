@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from mass_api_client import ConnectionManager
 
@@ -19,7 +20,7 @@ class HTTMockTestCase(unittest.TestCase):
     def assertHasForm(self, request, form_index, file, content_type=None):
         request_form = request.original.files[form_index]
         self.assertEqual(request_form[0], None)
-        self.assertEqual(request_form[1], file)
+        self.assertEqual(json.loads(request_form[1]), json.loads(file))
 
         if content_type:
             self.assertEqual(request_form[2], content_type)
