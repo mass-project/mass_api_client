@@ -1,6 +1,5 @@
 import json
 import tempfile
-import re
 
 from httmock import all_requests, urlmatch, HTTMock
 
@@ -72,10 +71,9 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return json.dumps(data)
 
         with HTTMock(mass_mock_result):
-            obj_list = list(FileSample.query(md5sum=params['md5sum']))
-
-        for data_obj, py_obj in zip(data['results'], obj_list):
-            self.assertEqual(data_obj, py_obj._to_json())
+            obj_list = FileSample.query(md5sum=params['md5sum'])
+            for data_obj, py_obj in zip(data['results'], obj_list):
+                self.assertEqual(data_obj, py_obj._to_json())
 
     def test_downloading_sample_file(self):
         test_file_path = 'tests/data/test_data'

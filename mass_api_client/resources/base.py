@@ -47,7 +47,10 @@ class BaseResource:
         return cls._create_instance_from_data(deserialized)
 
     @classmethod
-    def _get_iter_from_url(cls, url, params={}, append_base_url=True):
+    def _get_iter_from_url(cls, url, params=None, append_base_url=True):
+        if params is None:
+            params = {}
+
         cm = ConnectionManager()
         next_url = url
 
