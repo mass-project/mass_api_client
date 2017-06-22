@@ -114,7 +114,7 @@ class BaseResource:
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_list_from_url('{}/'.format(cls.endpoint), params=params)
+        return cls._get_iter_from_url('{}/'.format(cls.endpoint), params=params)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)

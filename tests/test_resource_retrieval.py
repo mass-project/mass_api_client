@@ -72,7 +72,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return json.dumps(data)
 
         with HTTMock(mass_mock_result):
-            obj_list = FileSample.query(md5sum=params['md5sum'])
+            obj_list = list(FileSample.query(md5sum=params['md5sum']))
 
         for data_obj, py_obj in zip(data['results'], obj_list):
             self.assertEqual(data_obj, py_obj._to_json())
