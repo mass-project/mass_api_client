@@ -1,6 +1,7 @@
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
 from .base import BaseResource
+import datetime
 
 
 class Report(BaseResource):
@@ -20,15 +21,18 @@ class Report(BaseResource):
         return self.__repr__()
 
     @classmethod
-    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None):
+    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None, analysis_date=None):
         if tags is None:
             tags = []
 
         if additional_metadata is None:
             additional_metadata = {}
 
+        if analysis_date is None:
+            analysis_date = datetime.datetime.now()
+
         url = cls.creation_point.format(scheduled_analysis=scheduled_analysis.id)
-        return cls._create(url=url, additional_json_files=json_report_objects,
+        return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, force_multipart=True)
 
