@@ -1,7 +1,8 @@
+import datetime
+
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
 from .base import BaseResource
-import datetime
 
 
 class Report(BaseResource):
@@ -13,6 +14,10 @@ class Report(BaseResource):
     schema = ReportSchema()
     endpoint = 'report'
     creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
+
+    def __init__(self, connection_alias, **kwargs):
+        super(Report, self).__init__(connection_alias, **kwargs)
+        self._json_reports_cache = None
 
     def __repr__(self):
         return '[Report] {} on {}'.format(self.sample, self.analysis_system)
@@ -47,6 +52,16 @@ class Report(BaseResource):
         return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, force_multipart=True)
+
+    @property
+    def json_reports(self):
+        if self._json_reports_cache:
+            return self._json_reports_cache
+
+        self._json_reports_cache = {}
+        for key in self.json_report_objects.keys():
+            self._json_reports_cache[key] = self.get_json_report_object(key)
+        return self._json_reports_cache
 
     def get_json_report_object(self, key):
         """
