@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from mass_api_client import ConnectionManager
 
@@ -8,8 +9,10 @@ class HTTMockTestCase(unittest.TestCase):
         self.api_key = '1234567890abcdef'
         self.base_url = 'http://localhost/api/'
         self.example_data = {'lorem': 'ipsum', 'integer': 1}
-        self.cm = ConnectionManager()
-        self.cm.register_connection(api_key=self.api_key, base_url=self.base_url, alias='default')
+        cm = ConnectionManager()
+        cm.register_connection(api_key=self.api_key, base_url=self.base_url, alias='default')
+        cm.register_connection(api_key=self.api_key, base_url='http://notlocalhost/api/', alias='secondary')
+        self.connection = cm.get_connection('default')
 
     def assertAuthorized(self, request):
         self.assertEqual(request.headers['Authorization'], 'APIKEY {}'.format(self.api_key))
@@ -17,7 +20,7 @@ class HTTMockTestCase(unittest.TestCase):
     def assertHasForm(self, request, form_index, file, content_type=None):
         request_form = request.original.files[form_index]
         self.assertEqual(request_form[0], None)
-        self.assertEqual(request_form[1], file)
+        self.assertEqual(json.loads(request_form[1]), json.loads(file))
 
         if content_type:
             self.assertEqual(request_form[2], content_type)

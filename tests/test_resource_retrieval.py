@@ -1,6 +1,5 @@
 import json
 import tempfile
-import re
 
 from httmock import all_requests, urlmatch, HTTMock
 
@@ -73,9 +72,8 @@ class ReportRetrievalTestCase(HTTMockTestCase):
 
         with HTTMock(mass_mock_result):
             obj_list = FileSample.query(md5sum=params['md5sum'])
-
-        for data_obj, py_obj in zip(data['results'], obj_list):
-            self.assertEqual(data_obj, py_obj._to_json())
+            for data_obj, py_obj in zip(data['results'], obj_list):
+                self.assertEqual(data_obj, py_obj._to_json())
 
     def test_downloading_sample_file(self):
         test_file_path = 'tests/data/test_data'
@@ -93,6 +91,43 @@ class ReportRetrievalTestCase(HTTMockTestCase):
 
         with HTTMock(mass_mock_file), tempfile.TemporaryFile() as tmpfile, open(test_file_path, 'rb') as data_file:
             file_sample.download_to_file(tmpfile)
+            tmpfile.seek(0)
+            self.assertEqual(data_file.read(), tmpfile.read())
+
+    def test_retrieving_json_report_object(self):
+        with open('tests/data/file_sample.json') as data_file:
+            json_data = json.load(data_file)
+
+        @urlmatch(netloc=r'localhost', path=r'/api/report/58362185a7a7f10843133337/json_report_object/found_strings/')
+        def mass_mock_report_object(url, request):
+            self.assertAuthorized(request)
+            return json.dumps(json_data)
+
+        with open('tests/data/report.json') as f:
+            data = Report._deserialize(json.load(f))
+            report = Report._create_instance_from_data(data)
+
+        with HTTMock(mass_mock_report_object):
+            retrieved_data = report.get_json_report_object('found_strings')
+
+        self.assertEqual(json_data, retrieved_data)
+
+    def test_retrieving_raw_report_object(self):
+        test_file_path = 'tests/data/test_data'
+
+        @urlmatch(netloc=r'localhost', path=r'/api/report/58362185a7a7f10843133337/raw_report_object/graph/')
+        def mass_mock_file(url, request):
+            self.assertAuthorized(request)
+            with open(test_file_path, 'rb') as data_file:
+                content = data_file.read()
+            return content
+
+        with open('tests/data/report.json') as f:
+            data = Report._deserialize(json.load(f))
+            report = Report._create_instance_from_data(data)
+
+        with HTTMock(mass_mock_file), tempfile.TemporaryFile() as tmpfile, open(test_file_path, 'rb') as data_file:
+            report.download_raw_report_object_to_file('graph', tmpfile)
             tmpfile.seek(0)
             self.assertEqual(data_file.read(), tmpfile.read())
 

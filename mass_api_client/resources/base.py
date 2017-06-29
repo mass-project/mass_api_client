@@ -17,8 +17,11 @@ class BaseResource:
     creation_point = None
     filter_parameters = []
     default_filters = {}
+    connection_alias = 'default'
 
-    def __init__(self, **kwargs):
+    def __init__(self, connection_alias, **kwargs):
+        # Store current connection, in case the connection gets switched later on.
+        self.connection_alias = connection_alias
         self.__dict__.update(kwargs)
 
     @classmethod
@@ -37,22 +40,25 @@ class BaseResource:
 
     @classmethod
     def _create_instance_from_data(cls, data):
-        return cls(**data)
+        return cls(cls.connection_alias, **data)
 
     @classmethod
     def _get_detail_from_url(cls, url, append_base_url=True):
-        cm = ConnectionManager()
+        con = ConnectionManager().get_connection(cls.connection_alias)
 
-        deserialized = cls._deserialize(cm.get_json(url, append_base_url=append_base_url))
+        deserialized = cls._deserialize(con.get_json(url, append_base_url=append_base_url))
         return cls._create_instance_from_data(deserialized)
 
     @classmethod
-    def _get_iter_from_url(cls, url, params={}, append_base_url=True):
-        cm = ConnectionManager()
+    def _get_iter_from_url(cls, url, params=None, append_base_url=True):
+        if params is None:
+            params = {}
+
+        con = ConnectionManager().get_connection(cls.connection_alias)
         next_url = url
 
         while next_url is not None:
-            res = cm.get_json(next_url, params=params, append_base_url=append_base_url)
+            res = con.get_json(next_url, params=params, append_base_url=append_base_url)
             deserialized = cls._deserialize(res['results'], many=True)
             for data in deserialized:
                 yield cls._create_instance_from_data(data)
@@ -67,23 +73,23 @@ class BaseResource:
         if params is None:
             params = {}
 
-        cm = ConnectionManager()
-        deserialized = cls._deserialize(cm.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
+        con = ConnectionManager().get_connection(cls.connection_alias)
+        deserialized = cls._deserialize(con.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
         objects = [cls._create_instance_from_data(detail) for detail in deserialized]
 
         return objects
 
     @classmethod
     def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, **kwargs):
-        cm = ConnectionManager()
+        con = ConnectionManager().get_connection(cls.connection_alias)
         if not url:
             url = '{}/'.format(cls.creation_point)
         serialized, errors = cls.schema.dump(kwargs)
 
         if additional_binary_files or additional_json_files or force_multipart:
-            response_data = cm.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
+            response_data = con.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
         else:
-            response_data = cm.post_json(url, serialized)
+            response_data = con.post_json(url, serialized)
 
         deserialized = cls._deserialize(response_data)
 
@@ -126,7 +132,7 @@ class BaseResource:
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_list_from_url('{}/'.format(cls.endpoint), params=params)
+        return cls._get_iter_from_url('{}/'.format(cls.endpoint), params=params)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
