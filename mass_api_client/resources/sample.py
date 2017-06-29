@@ -44,8 +44,8 @@ class DomainSample(Sample):
     ]
 
     @classmethod
-    def create(cls, domain, tlp_level=0):
-        return cls._create(domain=domain, tlp_level=tlp_level)
+    def create(cls, domain, tlp_level=0, tags=[]):
+        return cls._create(domain=domain, tlp_level=tlp_level, tags=tags)
 
 
 class URISample(Sample):
@@ -62,8 +62,8 @@ class URISample(Sample):
     ]
 
     @classmethod
-    def create(cls, uri, tlp_level=0):
-        return cls._create(uri=uri, tlp_level=tlp_level)
+    def create(cls, uri, tlp_level=0, tags=[]):
+        return cls._create(uri=uri, tlp_level=tlp_level, tags=tags)
       
 
 class IPSample(Sample):
@@ -78,8 +78,8 @@ class IPSample(Sample):
     ]
 
     @classmethod
-    def create(cls, ip_address, tlp_level=0):
-        return cls._create(ip_address=ip_address, tlp_level=tlp_level)
+    def create(cls, ip_address, tlp_level=0, tags=[]):
+        return cls._create(ip_address=ip_address, tlp_level=tlp_level, tags=tags)
 
 
 class FileSample(Sample):
