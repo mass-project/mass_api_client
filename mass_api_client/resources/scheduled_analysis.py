@@ -13,8 +13,8 @@ class ScheduledAnalysis(BaseResource):
     def create(cls, analysis_system_instance, sample):
         return cls._create(analysis_system_instance=analysis_system_instance.url, sample=sample.url)
 
-    def create_report(self, json_report_objects=None, raw_report_objects=None, tags=None):
-        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, tags=tags)
+    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None):
+        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, additional_metadata=additional_metadata, tags=tags)
 
     def get_sample(self):
         sample_url = self.sample
