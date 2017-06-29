@@ -1,7 +1,8 @@
+import datetime
+
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
 from .base import BaseResource
-import datetime
 
 
 class Report(BaseResource):
@@ -14,8 +15,8 @@ class Report(BaseResource):
     endpoint = 'report'
     creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
 
-    def __init__(self, **kwargs):
-        super(Report, self).__init__(**kwargs)
+    def __init__(self, connection_alias, **kwargs):
+        super(Report, self).__init__(connection_alias, **kwargs)
         self._json_reports_cache = None
 
     def __repr__(self):
