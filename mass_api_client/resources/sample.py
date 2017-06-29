@@ -44,8 +44,8 @@ class DomainSample(Sample):
     ]
 
     @classmethod
-    def create(cls, domain, tlp_level=0):
-        return cls._create(domain=domain, tlp_level=tlp_level)
+    def create(cls, domain, tlp_level=0, tags=[]):
+        return cls._create(domain=domain, tlp_level=tlp_level, tags=tags)
 
 
 class URISample(Sample):
@@ -62,8 +62,8 @@ class URISample(Sample):
     ]
 
     @classmethod
-    def create(cls, uri, tlp_level=0):
-        return cls._create(uri=uri, tlp_level=tlp_level)
+    def create(cls, uri, tlp_level=0, tags=[]):
+        return cls._create(uri=uri, tlp_level=tlp_level, tags=tags)
       
 
 class IPSample(Sample):
@@ -78,8 +78,8 @@ class IPSample(Sample):
     ]
 
     @classmethod
-    def create(cls, ip_address, tlp_level=0):
-        return cls._create(ip_address=ip_address, tlp_level=tlp_level)
+    def create(cls, ip_address, tlp_level=0, tags=[]):
+        return cls._create(ip_address=ip_address, tlp_level=tlp_level, tags=tags)
 
 
 class FileSample(Sample):
@@ -106,8 +106,8 @@ class FileSample(Sample):
         return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags)
 
     def download_to_file(self, file):
-        cm = ConnectionManager()
-        return cm.download_to_file(self.file, file, append_base_url=False)
+        con = ConnectionManager().get_connection(self.connection_alias)
+        return con.download_to_file(self.file, file, append_base_url=False)
 
     @contextmanager
     def temporary_file(self):
