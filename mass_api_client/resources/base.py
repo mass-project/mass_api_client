@@ -121,7 +121,7 @@ class BaseResource:
         :return: The list of matching objects
         :raises A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
         """
-        params = cls.default_filters
+        params = dict(cls.default_filters)
 
         for key, value in kwargs.items():
             if key in cls.filter_parameters:
