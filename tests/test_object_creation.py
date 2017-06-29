@@ -78,17 +78,17 @@ class ObjectCreationTestCase(HTTMockTestCase):
                                              'tests/data/scheduled_analysis.json')
 
     def test_creating_domain_sample(self):
-        data = {'domain': 'uni-bonn.de', 'tlp_level': 0}
+        data = {'domain': 'uni-bonn.de', 'tlp_level': 0, 'tags': []}
         self.assertCorrectHTTPDetailCreation(DomainSample, r'/api/sample/submit_domain/', data,
                                              'tests/data/domain_sample.json')
 
     def test_creating_ip_sample(self):
-        data = {'ip_address': '192.168.1.1', 'tlp_level': 0}
+        data = {'ip_address': '192.168.1.1', 'tlp_level': 0, 'tags': []}
         self.assertCorrectHTTPDetailCreation(IPSample, r'/api/sample/submit_ip/', data,
                                              'tests/data/ip_sample.json')
 
     def test_creating_uri_sample(self):
-        data = {'uri': 'http://uni-bonn.de/test', 'tlp_level': 0}
+        data = {'uri': 'http://uni-bonn.de/test', 'tlp_level': 0, 'tags': []}
         self.assertCorrectHTTPDetailCreation(URISample, r'/api/sample/submit_uri/', data, 'tests/data/uri_sample.json')
 
     def test_creating_file_sample(self):
