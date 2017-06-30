@@ -32,7 +32,6 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time):
         while True:
             for analysis_request in analysis_system_instance.get_scheduled_analyses():
                 analysis_method(analysis_request)
-            logging.debug('Processed all scheduled analyses. Going to sleep.')
             time.sleep(sleep_time)
     except KeyboardInterrupt:
         logging.debug('Shutting down.')
