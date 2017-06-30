@@ -20,6 +20,11 @@ class Sample(BaseWithSubclasses):
     ]
 
     def get_reports(self):
+        """
+        Retrieve all reports submitted for this `Sample`.
+
+        :return: A list of `Report`s
+        """
         url = '{}reports/'.format(self.url)
         return Report._get_list_from_url(url, append_base_url=False)
 
@@ -44,8 +49,16 @@ class DomainSample(Sample):
     ]
 
     @classmethod
-    def create(cls, domain, tlp_level=0):
-        return cls._create(domain=domain, tlp_level=tlp_level)
+    def create(cls, domain, tlp_level=0, tags=[]):
+        """
+        Create a new `DomainSample` on the server.
+
+        :param domain: The domain as a string.
+        :param tlp_level: The TLP-Level
+        :param tags: Tags to add to the sample.
+        :return: The created sample.
+        """
+        return cls._create(domain=domain, tlp_level=tlp_level, tags=tags)
 
 
 class URISample(Sample):
@@ -62,8 +75,16 @@ class URISample(Sample):
     ]
 
     @classmethod
-    def create(cls, uri, tlp_level=0):
-        return cls._create(uri=uri, tlp_level=tlp_level)
+    def create(cls, uri, tlp_level=0, tags=[]):
+        """
+        Create a new `URISample` on the server.
+
+        :param uri: The uri as a string.
+        :param tlp_level: The TLP-Level
+        :param tags: Tags to add to the sample.
+        :return: The created sample.
+        """
+        return cls._create(uri=uri, tlp_level=tlp_level, tags=tags)
       
 
 class IPSample(Sample):
@@ -78,8 +99,16 @@ class IPSample(Sample):
     ]
 
     @classmethod
-    def create(cls, ip_address, tlp_level=0):
-        return cls._create(ip_address=ip_address, tlp_level=tlp_level)
+    def create(cls, ip_address, tlp_level=0, tags=[]):
+        """
+        Create a new `IPSample` on the server.
+
+        :param ip_address: The ip address as a string
+        :param tlp_level: The TLP-Level
+        :param tags: Tags to add to the sample.
+        :return: The created sample.
+        """
+        return cls._create(ip_address=ip_address, tlp_level=tlp_level, tags=tags)
 
 
 class FileSample(Sample):
@@ -103,14 +132,34 @@ class FileSample(Sample):
 
     @classmethod
     def create(cls, filename, file, tlp_level=0, tags=[]):
+        """
+        Create a new `FileSample` on the server.
+
+        :param filename: The filename of the file
+        :param file: A `file`-like object
+        :param tlp_level: The TLP-Level
+        :param tags: Tags to add to the sample.
+        :return: The created sample.
+        """
         return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags)
 
     def download_to_file(self, file):
-        cm = ConnectionManager()
-        return cm.download_to_file(self.file, file, append_base_url=False)
+        """
+        Download and store the file of the sample.
+
+        :param file: A `file` object to store the file.
+        """
+        con = ConnectionManager().get_connection(self.connection_alias)
+        return con.download_to_file(self.file, file, append_base_url=False)
 
     @contextmanager
     def temporary_file(self):
+        """
+        Contextmanager to get a temporary copy of the file of the sample.
+
+        The file will automatically be closed and removed after use.
+        :return: A `file`-like object.
+        """
         with tempfile.NamedTemporaryFile() as tmp:
             self.download_to_file(tmp)
             yield tmp

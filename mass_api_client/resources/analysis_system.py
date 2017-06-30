@@ -10,9 +10,22 @@ class AnalysisSystem(BaseResource):
 
     @classmethod
     def create(cls, identifier_name, verbose_name, tag_filter_expression=''):
+        """
+        Create a new `AnalysisSystem` on the server.
+
+        :param identifier_name: Unique identifier string.
+        :param verbose_name: A descriptive name of the AnalysisSystem.
+        :param tag_filter_expression: Tag filters to automatically select samples for this AnalysisSystem.
+        :return: The created `AnalysisSystem` object.
+        """
         return cls._create(identifier_name=identifier_name, verbose_name=verbose_name, tag_filter_expression=tag_filter_expression)
 
     def create_analysis_system_instance(self):
+        """
+        Create an instance of this AnalysisSystem on the server.
+
+        :return: The created `AnalysisSystemInstance` object.
+        """
         return AnalysisSystemInstance.create(analysis_system=self)
 
     def __repr__(self):
