@@ -23,7 +23,7 @@ class ScheduledAnalysis(BaseResource):
         """
         return cls._create(analysis_system_instance=analysis_system_instance.url, sample=sample.url)
 
-    def create_report(self, analysis_date=datetime.datetime.now(), json_report_objects=None, raw_report_objects=None, tags=None):
+    def create_report(self, analysis_date=None, json_report_objects=None, raw_report_objects=None, tags=None):
         """
         Create a report and remove the ScheduledAnalysis from the server.
 
