@@ -8,3 +8,7 @@ script:
   - "nosetests"
 after_success:
   - codecov
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/a3003f118577918a4392
