@@ -12,7 +12,7 @@ class UtilsTestCase(HTTMockTestCase):
             return open('tests/data/analysis_system_instance.json').read()
 
         with HTTMock(mass_mock):
-           analysis_system_instance = utils.create_analysis_system_instance("5a391093-f251-4c08-991d-26fc5e0e5793")
+           analysis_system_instance = utils.get_or_create_analysis_system_instance("5a391093-f251-4c08-991d-26fc5e0e5793")
            self.assertEqual(analysis_system_instance.uuid, "5a391093-f251-4c08-991d-26fc5e0e5793")
 
     def test_create_analysis_system_without_uuid(self):
@@ -24,7 +24,7 @@ class UtilsTestCase(HTTMockTestCase):
                 return open('tests/data/analysis_system_instance.json').read()
 
         with HTTMock(mass_mock):
-            analysis_system_instance = utils.create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
+            analysis_system_instance = utils.get_or_create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
             self.assertEqual(analysis_system_instance.uuid, "5a391093-f251-4c08-991d-26fc5e0e5793")
 
     def test_create_analysis_system_without_analysis_system(self):
@@ -42,7 +42,7 @@ class UtilsTestCase(HTTMockTestCase):
             self.fail('There should not be any other queries to MASS')
 
         with HTTMock(mass_mock):
-            analysis_system_instance = utils.create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
+            analysis_system_instance = utils.get_or_create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
             self.assertEqual(analysis_system_instance.uuid, '5a391093-f251-4c08-991d-26fc5e0e5793')
 
 
