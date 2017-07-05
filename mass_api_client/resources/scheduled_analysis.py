@@ -23,17 +23,18 @@ class ScheduledAnalysis(BaseResource):
         """
         return cls._create(analysis_system_instance=analysis_system_instance.url, sample=sample.url)
 
-    def create_report(self, analysis_date=None, json_report_objects=None, raw_report_objects=None, tags=None):
+    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None, analysis_date=None):
         """
         Create a report and remove the ScheduledAnalysis from the server.
 
+        :param additional_metadata: A dictionary of additional metadata.
         :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
         :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
         :param tags: A list of strings.
         :param analysis_date: datetime object of the time the report was generated. Defaults to current time.
         :return: The created report object.
         """
-        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, tags=tags, analysis_date=analysis_date)
+        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date)
 
     def get_sample(self):
         """
