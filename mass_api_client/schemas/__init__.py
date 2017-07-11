@@ -3,5 +3,5 @@ from .analysis_system import AnalysisSystemSchema
 from .analysis_system_instance import AnalysisSystemInstanceSchema
 from .report import ReportSchema
 from .sample import DomainSampleSchema, IPSampleSchema, URISampleSchema, FileSampleSchema, ExecutableBinarySampleSchema
-from .sample_relation import DroppedBySampleRelationSchema, ContactedBySampleRelationSchema, ResolvedBySampleRelationSchema, RetrievedBySampleRelationSchema, SsdeepSampleRelationSchema, SampleRelationTypeSchema
+from .sample_relation import SampleRelationSchema, SampleRelationTypeSchema
 from .scheduled_analysis import ScheduledAnalysisSchema

@@ -1,6 +1,5 @@
-from mass_api_client.schemas import DroppedBySampleRelationSchema, ResolvedBySampleRelationSchema, \
-    RetrievedBySampleRelationSchema, ContactedBySampleRelationSchema, SsdeepSampleRelationSchema, SampleRelationTypeSchema
-from .base_with_subclasses import BaseWithSubclasses, BaseResource
+from mass_api_client.schemas import SampleRelationTypeSchema, SampleRelationSchema
+from .base_with_subclasses import BaseResource
 from .sample import Sample
 
 
@@ -19,7 +18,8 @@ class SampleRelationType(BaseResource):
         return self.__repr__()
 
 
-class SampleRelation(BaseWithSubclasses):
+class SampleRelation(BaseResource):
+    schema = SampleRelationSchema()
     endpoint = 'sample_relation'
     _class_identifier = 'SampleRelation'
 
@@ -35,33 +35,3 @@ class SampleRelation(BaseWithSubclasses):
 
     def __str__(self):
         return self.__repr__()
-
-
-class DroppedBySampleRelation(SampleRelation):
-    schema = DroppedBySampleRelationSchema()
-    _class_identifier = 'SampleRelation.DroppedBySampleRelation'
-    creation_point = 'sample_relation/submit_dropped_by'
-
-
-class ResolvedBySampleRelation(SampleRelation):
-    schema = ResolvedBySampleRelationSchema()
-    _class_identifier = 'SampleRelation.ResolvedBySampleRelation'
-    creation_point = 'sample_relation/submit_resolved_by'
-
-
-class ContactedBySampleRelation(SampleRelation):
-    schema = ContactedBySampleRelationSchema()
-    _class_identifier = 'SampleRelation.ContactedBySampleRelation'
-    creation_point = 'sample_relation/submit_contacted_by'
-
-
-class RetrievedBySampleRelation(SampleRelation):
-    schema = RetrievedBySampleRelationSchema()
-    _class_identifier = 'SampleRelation.RetrievedBySampleRelation'
-    creation_point = 'sample_relation/submit_retrieved_by'
-
-
-class SsdeepSampleRelation(SampleRelation):
-    schema = SsdeepSampleRelationSchema()
-    _class_identifier = 'SampleRelation.SsdeepSampleRelation'
-    creation_point = 'sample_relation/submit_ssdeep'
