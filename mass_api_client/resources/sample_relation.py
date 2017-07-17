@@ -21,6 +21,22 @@ class SampleRelation(BaseWithSubclasses):
     def __str__(self):
         return self.__repr__()
 
+    def get_sample(self):
+        """
+        Retrieves the first sample object of the sample relation from the server.
+
+        :return: The sample object.
+        """
+        return Sample._get_detail_from_url(self.sample, append_base_url=False)
+
+    def get_other(self):
+        """
+        Retrieves the other sample object of the sample relation from the server.
+
+        :return: The sample object.
+        """
+        return Sample._get_detail_from_url(self.other, append_base_url=False)
+
 
 class DroppedBySampleRelation(SampleRelation):
     schema = DroppedBySampleRelationSchema()
