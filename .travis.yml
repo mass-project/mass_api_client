@@ -8,6 +8,15 @@ script:
   - "nosetests"
 after_success:
   - codecov
+deploy:
+  provider: pypi
+  user: mass-project
+  password:
+    secure: "wHQXbGLPtfBNCsBmaeF3bm2PTNw2tLR+pFXvS+jbbFWhQXrzN7Fnf0PHFz8q8UA3rgD+bVYR5Go3jY4gZmVKJpxywB8eguY3OgLcgvtNDoudxgvZxwj4pMGA3Xyuh+fYlaqjtnvWR07kBwp9nEM9VEHVv7n0yYVt6IZkWr+Bu2LhqNlPKZ3wlNDgMRM+evFU8q2GzJEJtA03quDq3/DfsyEKwHajdbyolxuEGw39Ca810/Av2i4jOihu6mBcX231zVps7TLLbXRNoQzy1YTZ1Yw0KL/0NY5Ew5R9sD/03yytGghL+WpfvD7j/JuxPD+2gavnrByTVvaVbA5Gcyylh3XRcz0egBEYljJTj10gGxSxPnC8XjJq/qfDUQgzzkqAzl6g8UBXPcksTSydchxYVJQSGGoT4mnkJ6FPrFVL+AtWRFU4WrXMW2bqc9O3OZPTPQKSNFjpSZ5M7T4Wo/uuGRS4gjCswMo0g2FUwyx4aDrlUbRL3b1g6FmFjfdzwEyyYaINyxiervpqCcZ/g5VhN++vBqKnRVnlxs7mJWeNvlx3dpS8rX4vX/UveufsYCN1aazCUcG+t3DYv72Ujto3O5gi8BVicWv845C/+5dHW+dB851JbZyM2Ws6jbOyD4IvWYEpgdQXK9mkOjwLF+g3xibxyN+XCVJ9ncIefRQcWGE="
+  on:
+    tags: true
+    python: '3.6'
+    branch: feature-73
 notifications:
   webhooks:
     urls:
