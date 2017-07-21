@@ -16,7 +16,6 @@ deploy:
   on:
     tags: true
     python: '3.6'
-    branch: feature-73
 notifications:
   webhooks:
     urls:
