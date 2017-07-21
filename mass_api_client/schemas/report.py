@@ -6,7 +6,7 @@ from .base import BaseSchema
 class ReportSchema(BaseSchema):
     analysis_system = fields.Url(required=True)
     sample = fields.Url(required=True)
-    analysis_date = fields.DateTime(format='%Y-%m-%dT%H:%M:%S.%f+00:00', allow_none=True)
+    analysis_date = fields.DateTime(allow_none=True)
     upload_date = fields.DateTime(required=True)
     status = fields.Int()
     error_message = fields.Str(allow_none=True)
