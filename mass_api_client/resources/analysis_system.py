@@ -1,4 +1,5 @@
 from mass_api_client.schemas import AnalysisSystemSchema
+from .analysis_request import AnalysisRequest
 from .analysis_system_instance import AnalysisSystemInstance
 from .base import BaseResource
 
@@ -21,6 +22,17 @@ class AnalysisSystem(BaseResource):
         :return: The created :class:`AnalysisSystem` object.
         """
         return cls._create(identifier_name=identifier_name, verbose_name=verbose_name, tag_filter_expression=tag_filter_expression)
+
+    def create_request(self, sample, priority=0, parameters=None):
+        """
+        Create a new `AnalysisRequest` on the server.
+
+        :param sample: A `Sample` object
+        :param priority: The priority with which the request should be scheduled.
+        :param parameters: Analysis system specific parameters.
+        :return: The created `AnalysisRequest` object.
+        """
+        return AnalysisRequest.create(sample, self, priority, parameters)
 
     def create_analysis_system_instance(self):
         """

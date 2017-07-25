@@ -9,15 +9,17 @@ class AnalysisRequest(BaseResource):
     _creation_point = _endpoint
 
     @classmethod
-    def create(cls, sample, analysis_system):
+    def create(cls, sample, analysis_system, priority=0, parameters=None):
         """
         Create a new :class:`.AnalysisRequest` on the server.
 
         :param sample: A `Sample` object
         :param analysis_system: The :class:`AnalysisSystem` that should be used for the analysis.
+        :param priority: The priority with which the request should be scheduled.
+        :param parameters: Analysis system specific parameters.
         :return: The created :class:`AnalysisRequest` object.
         """
-        return cls._create(sample=sample.url, analysis_system=analysis_system.url)
+        return cls._create(sample=sample.url, analysis_system=analysis_system.url, priority=priority, parameters=parameters)
 
     def get_analysis_system(self):
         """
