@@ -4,7 +4,7 @@ from .resources import BaseResource, BaseWithSubclasses
 class SwitchConnection:
     def __init__(self, resource, connection_alias):
         self.resource = resource
-        self.connection_alias = connection_alias
+        self._connection_alias = connection_alias
 
     def __enter__(self):
         if issubclass(self.resource, BaseWithSubclasses):
@@ -22,19 +22,19 @@ class SwitchConnection:
 
     def _create_modified_base(self):
         class ModifiedResource(self.resource):
-            connection_alias = self.connection_alias
+            _connection_alias = self._connection_alias
 
         return ModifiedResource
 
     def _create_modified_base_with_subclasses(self):
         class ModifiedResource(self.resource):
-            connection_alias = self.connection_alias
+            _connection_alias = self._connection_alias
             _unmodified_cls = self.resource
 
             @classmethod
             def _create_instance_from_data(cls, data):
                 subcls = cls._unmodified_cls._search_subclass(data['_cls'])
-                return subcls(cls.connection_alias, **data)
+                return subcls(cls._connection_alias, **data)
 
             @classmethod
             def _deserialize(cls, data, many=False):

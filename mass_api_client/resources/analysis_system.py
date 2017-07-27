@@ -5,8 +5,8 @@ from .base import BaseResource
 
 class AnalysisSystem(BaseResource):
     schema = AnalysisSystemSchema()
-    endpoint = 'analysis_system'
-    creation_point = endpoint
+    _endpoint = 'analysis_system'
+    _creation_point = _endpoint
 
     @classmethod
     def create(cls, identifier_name, verbose_name, tag_filter_expression=''):

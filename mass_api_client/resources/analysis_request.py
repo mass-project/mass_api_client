@@ -4,8 +4,8 @@ from mass_api_client.schemas import AnalysisRequestSchema
 
 class AnalysisRequest(BaseResource):
     schema = AnalysisRequestSchema()
-    endpoint = 'analysis_request'
-    creation_point = endpoint
+    _endpoint = 'analysis_request'
+    _creation_point = _endpoint
 
     @classmethod
     def create(cls, sample, analysis_system):

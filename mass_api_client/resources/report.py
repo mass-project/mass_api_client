@@ -12,8 +12,8 @@ class Report(BaseResource):
     REPORT_STATUS_CODES = [REPORT_STATUS_CODE_OK, REPORT_STATUS_CODE_FAILURE]
 
     schema = ReportSchema()
-    endpoint = 'report'
-    creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
+    _endpoint = 'report'
+    _creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
 
     def __init__(self, connection_alias, **kwargs):
         super(Report, self).__init__(connection_alias, **kwargs)
@@ -70,7 +70,7 @@ class Report(BaseResource):
         :param key: The key of the report object
         :return: The deserialized JSON report object.
         """
-        con = ConnectionManager().get_connection(self.connection_alias)
+        con = ConnectionManager().get_connection(self._connection_alias)
         return con.get_json(self.json_report_objects[key], append_base_url=False)
 
     def download_raw_report_object_to_file(self, key, file):
@@ -80,5 +80,5 @@ class Report(BaseResource):
         :param key: The key of the report object
         :param file: A `file` object to store the report object.
         """
-        con = ConnectionManager().get_connection(self.connection_alias)
+        con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.raw_report_objects[key], file, append_base_url=False)

@@ -2,13 +2,12 @@ from mass_api_client.schemas import ScheduledAnalysisSchema
 from .base import BaseResource
 from .report import Report
 from .sample import Sample
-import datetime
 
 
 class ScheduledAnalysis(BaseResource):
     schema = ScheduledAnalysisSchema()
-    endpoint = 'scheduled_analysis'
-    creation_point = endpoint
+    _endpoint = 'scheduled_analysis'
+    _creation_point = _endpoint
 
     @classmethod
     def create(cls, analysis_system_instance, sample):

@@ -5,8 +5,8 @@ from .scheduled_analysis import ScheduledAnalysis
 
 class AnalysisSystemInstance(BaseResource):
     schema = AnalysisSystemInstanceSchema()
-    endpoint = 'analysis_system_instance'
-    creation_point = endpoint
+    _endpoint = 'analysis_system_instance'
+    _creation_point = _endpoint
 
     @classmethod
     def create(cls, analysis_system):
