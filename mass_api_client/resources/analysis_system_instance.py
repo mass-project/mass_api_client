@@ -11,12 +11,14 @@ class AnalysisSystemInstance(BaseResource):
     @classmethod
     def create(cls, analysis_system):
         """
-        Create a new `AnalysisSystemInstance` on the server.
+        Create a new :class:`AnalysisSystemInstance` on the server.
 
-        For convenience `AnalysisSystem.create_analysis_system_instance()` can be used instead.
+        For convenience
+        :func:`~mass_api_client.resources.analysis_system.AnalysisSystem.create_analysis_system_instance`
+        of class :class:`.AnalysisSystem` can be used instead.
 
-        :param analysis_system: The corresponding `AnalysisSystem` object
-        :return: The created `AnalysisSystemInstance` object
+        :param analysis_system: The corresponding :class:`.AnalysisSystem` object
+        :return: The created :class:`AnalysisSystemInstance` object
         """
         return cls._create(analysis_system=analysis_system.url)
 
@@ -25,7 +27,7 @@ class AnalysisSystemInstance(BaseResource):
         Schedule the given sample for this instance on the server.
 
         :param sample: The sample object to be scheduled.
-        :return: The created `ScheduledAnalysis` object.
+        :return: The created :class:`.ScheduledAnalysis` object.
         """
         return ScheduledAnalysis.create(self, sample)
 
@@ -33,7 +35,7 @@ class AnalysisSystemInstance(BaseResource):
         """
         Retrieve all scheduled analyses for this instance.
 
-        :return: A list of `AnalysisSystemInstance` objects.
+        :return: A list of :class:`.ScheduledAnalysis` objects.
         """
         url = '{}scheduled_analyses/'.format(self.url)
         return ScheduledAnalysis._get_list_from_url(url, append_base_url=False)

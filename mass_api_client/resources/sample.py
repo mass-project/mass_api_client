@@ -21,9 +21,9 @@ class Sample(BaseWithSubclasses):
 
     def get_reports(self):
         """
-        Retrieve all reports submitted for this `Sample`.
+        Retrieve all reports submitted for this Sample.
 
-        :return: A list of `Report`s
+        :return: A list of :class:`.Report`
         """
         url = '{}reports/'.format(self.url)
         return Report._get_list_from_url(url, append_base_url=False)
@@ -51,7 +51,7 @@ class DomainSample(Sample):
     @classmethod
     def create(cls, domain, tlp_level=0, tags=[]):
         """
-        Create a new `DomainSample` on the server.
+        Create a new :class:`DomainSample` on the server.
 
         :param domain: The domain as a string.
         :param tlp_level: The TLP-Level
@@ -77,7 +77,7 @@ class URISample(Sample):
     @classmethod
     def create(cls, uri, tlp_level=0, tags=[]):
         """
-        Create a new `URISample` on the server.
+        Create a new :class:`URISample` on the server.
 
         :param uri: The uri as a string.
         :param tlp_level: The TLP-Level
@@ -101,7 +101,7 @@ class IPSample(Sample):
     @classmethod
     def create(cls, ip_address, tlp_level=0, tags=[]):
         """
-        Create a new `IPSample` on the server.
+        Create a new :class:`IPSample` on the server.
 
         :param ip_address: The ip address as a string
         :param tlp_level: The TLP-Level
@@ -133,10 +133,10 @@ class FileSample(Sample):
     @classmethod
     def create(cls, filename, file, tlp_level=0, tags=[]):
         """
-        Create a new `FileSample` on the server.
+        Create a new :class:`FileSample` on the server.
 
         :param filename: The filename of the file
-        :param file: A `file`-like object
+        :param file: A file-like object
         :param tlp_level: The TLP-Level
         :param tags: Tags to add to the sample.
         :return: The created sample.
@@ -147,7 +147,7 @@ class FileSample(Sample):
         """
         Download and store the file of the sample.
 
-        :param file: A `file` object to store the file.
+        :param file: A file-like object to store the file.
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.file, file, append_base_url=False)
@@ -158,7 +158,8 @@ class FileSample(Sample):
         Contextmanager to get a temporary copy of the file of the sample.
 
         The file will automatically be closed and removed after use.
-        :return: A `file`-like object.
+
+        :return: A file-like object.
         """
         with tempfile.NamedTemporaryFile() as tmp:
             self.download_to_file(tmp)

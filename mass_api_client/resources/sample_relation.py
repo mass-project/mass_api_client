@@ -23,17 +23,17 @@ class SampleRelation(BaseWithSubclasses):
 
     def get_sample(self):
         """
-        Retrieves the first sample object of the sample relation from the server.
+        Retrieves the first :class:`Sample` object of the sample relation from the server.
 
-        :return: The sample object.
+        :return: The :class:`Sample` object.
         """
         return Sample._get_detail_from_url(self.sample, append_base_url=False)
 
     def get_other(self):
         """
-        Retrieves the other sample object of the sample relation from the server.
+        Retrieves the other :class:`Sample` object of the sample relation from the server.
 
-        :return: The sample object.
+        :return: The :class:`Sample` object.
         """
         return Sample._get_detail_from_url(self.other, append_base_url=False)
 

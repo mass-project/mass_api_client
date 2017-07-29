@@ -99,6 +99,7 @@ class BaseResource:
     def get(cls, identifier):
         """
         Fetch a single object.
+
         :param identifier: The unique identifier of the object
         :return: The retrieved object
         """
@@ -119,7 +120,7 @@ class BaseResource:
 
         :param kwargs: The query parameters. The key is the filter parameter and the value is the value to search for.
         :return: The list of matching objects
-        :raises A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
+        :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
         """
         params = dict(cls._default_filters)
 

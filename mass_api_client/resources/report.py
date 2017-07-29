@@ -30,9 +30,10 @@ class Report(BaseResource):
         """
         Create a new report.
 
-        For convenience `ScheduledAnalysis.create_report()` can be used instead.
+        For convenience :func:`~mass_api_client.resources.scheduled_analysis.ScheduledAnalysis.create_report`
+        of class :class:`.ScheduledAnalysis` can be used instead.
 
-        :param scheduled_analysis: The `ScheduledAnalysis` this report was created for
+        :param scheduled_analysis: The :class:`.ScheduledAnalysis` this report was created for
         :param tags: A list of strings
         :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
         :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
@@ -78,7 +79,7 @@ class Report(BaseResource):
         Download a raw report object and store it in a file.
 
         :param key: The key of the report object
-        :param file: A `file` object to store the report object.
+        :param file: A file-like object to store the report object.
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.raw_report_objects[key], file, append_base_url=False)
