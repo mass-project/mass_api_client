@@ -26,7 +26,7 @@ class Report(BaseResource):
         return self.__repr__()
 
     @classmethod
-    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None, analysis_date=None):
+    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None, analysis_date=None, failed=False, error_message=None):
         """
         Create a new report.
 
@@ -52,7 +52,7 @@ class Report(BaseResource):
         url = cls._creation_point.format(scheduled_analysis=scheduled_analysis.id)
         return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
-                           additional_metadata=additional_metadata, force_multipart=True)
+                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message, force_multipart=True)
 
     @property
     def json_reports(self):
