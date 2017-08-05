@@ -24,7 +24,7 @@ class ScheduledAnalysis(BaseResource):
         """
         return cls._create(analysis_system_instance=analysis_system_instance.url, sample=sample.url)
 
-    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None, analysis_date=None):
+    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None, analysis_date=None, failed=False, error_message=None):
         """
         Create a :class:`.Report` and remove the :class:`ScheduledAnalysis` from the server.
 
@@ -33,9 +33,11 @@ class ScheduledAnalysis(BaseResource):
         :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
         :param tags: A list of strings.
         :param analysis_date: :py:mod:`datetime` object of the time the report was generated. Defaults to current time.
+        :param failed: A boolean value. True if something during analysis went wrong
+        :param error_message: A message of what went wrong during analysis
         :return: The created :class:`.Report` object.
         """
-        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date)
+        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date, failed=failed, error_message=error_message)
 
     def get_sample(self):
         """

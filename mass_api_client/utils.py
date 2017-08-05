@@ -26,10 +26,14 @@ if __name__ == "__main__":
                                                                       )
     process_analyses(analysis_system_instance, size_analysis, sleep_time=7)
 """
-import requests
-from mass_api_client import resources
 import logging
 import time
+from sys import exc_info
+from traceback import format_exception, print_tb
+
+import requests
+
+from mass_api_client import resources
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -72,7 +76,7 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     return analysis_system_instance
 
 
-def process_analyses(analysis_system_instance, analysis_method, sleep_time):
+def process_analyses(analysis_system_instance, analysis_method, sleep_time, catch_exceptions=False):
     """Process all analyses which are scheduled for the analysis system instance.
 
     This function does not terminate on its own, give it a SIGINT or Ctrl+C to stop.
@@ -81,11 +85,24 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time):
     :param analysis_method: A function or method which analyses a scheduled analysis. The function must not take further arguments.
     :param sleep_time: Time to wait between polls to the MASS server
     """
-    try:
-        while True:
-            for analysis_request in analysis_system_instance.get_scheduled_analyses():
-                analysis_method(analysis_request)
-            time.sleep(sleep_time)
-    except KeyboardInterrupt:
-        logging.debug('Shutting down.')
-        return
+    while True:
+        for scheduled_analysis in analysis_system_instance.get_scheduled_analyses():
+            try:
+                analysis_method(scheduled_analysis)
+            except KeyboardInterrupt:
+                logging.debug('Shutting down.')
+                return
+            except Exception:
+                if not catch_exceptions:
+                    raise
+                e = exc_info()
+                exc_str = ''.join(format_exception(*e))
+                print_tb(e[2])
+                metadata = {
+                    'exception type': e[0].__name__
+                }
+                scheduled_analysis.create_report(additional_metadata=metadata,
+                                                 raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
+                                                 error_message=exc_str)
+        time.sleep(sleep_time)
+
