@@ -31,6 +31,16 @@ class Connection:
                 file.write(block)
             file.flush()
 
+    def delete(self, url, append_base_url=True, params=None):
+        if params is None:
+            params = {}
+
+        if append_base_url:
+            url = self._base_url + url
+
+        r = requests.delete(url, headers=self._default_headers, params=params, timeout=self._timeout)
+        r.raise_for_status()
+
     def get_json(self, url, append_base_url=True, params=None):
         if params is None:
             params = {}

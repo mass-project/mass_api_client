@@ -136,6 +136,14 @@ class BaseResource:
 
         return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
 
+    def delete(self):
+        con = ConnectionManager().get_connection(self.connection_alias)
+        con.delete(self.url, append_base_url=False)
+
+    def delete(self):
+        con = ConnectionManager().get_connection(self.connection_alias)
+        con.delete(self.url, append_base_url=False)
+
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
 
