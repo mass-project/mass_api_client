@@ -23,7 +23,7 @@ class IPSampleSchema(SampleSchema):
 
 class URISampleSchema(SampleSchema):
     _cls = fields.Str(validate=validate.Equal("Sample.URISample"))
-    uri = fields.Url(required=True)
+    uri = fields.Str(required=True)
 
 
 class FileSampleSchema(SampleSchema):
