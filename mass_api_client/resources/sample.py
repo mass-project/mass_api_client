@@ -28,6 +28,22 @@ class Sample(BaseWithSubclasses):
         url = '{}reports/'.format(self.url)
         return Report._get_list_from_url(url, append_base_url=False)
 
+    def get_relation_graph(self, depth=None):
+        """
+        Get all `SampleRelation`s in the relation graph of the sample.
+
+        :param depth: max depth of the returned graph. None retrieves the complete graph.
+        :return: An iterator over the relations
+        """
+        url = '{}relation_graph/'.format(self.url)
+        if depth is not None:
+            params = {'depth': depth}
+        else:
+            params = {}
+
+        from .sample_relation import SampleRelation
+        return SampleRelation._get_iter_from_url(url, params=params, append_base_url=False)
+
     def __repr__(self):
         return '[{}] {}'.format(str(self.__class__.__name__), str(self.id))
 
