@@ -28,7 +28,7 @@ class BaseWithSubclasses(BaseResource):
     @classmethod
     def _create_instance_from_data(cls, data):
         subcls = cls._search_subclass(data['_cls'])
-        return subcls(subcls.connection_alias, **data)
+        return subcls(subcls._connection_alias, **data)
 
     @classmethod
     def _deserialize(cls, data, many=False):

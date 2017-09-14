@@ -8,10 +8,10 @@ from .base_with_subclasses import BaseWithSubclasses
 
 
 class Sample(BaseWithSubclasses):
-    endpoint = 'sample'
+    _endpoint = 'sample'
     _class_identifier = 'Sample'
 
-    filter_parameters = [
+    _filter_parameters = [
         'delivery_date__lte',
         'delivery_date__gte',
         'first_seen__lte',
@@ -21,9 +21,9 @@ class Sample(BaseWithSubclasses):
 
     def get_reports(self):
         """
-        Retrieve all reports submitted for this `Sample`.
+        Retrieve all reports submitted for this Sample.
 
-        :return: A list of `Report`s
+        :return: A list of :class:`.Report`
         """
         url = '{}reports/'.format(self.url)
         return Report._get_list_from_url(url, append_base_url=False)
@@ -38,10 +38,10 @@ class Sample(BaseWithSubclasses):
 class DomainSample(Sample):
     schema = DomainSampleSchema()
     _class_identifier = 'Sample.DomainSample'
-    creation_point = 'sample/submit_domain'
-    default_filters = {'_cls': _class_identifier}
+    _creation_point = 'sample/submit_domain'
+    _default_filters = {'_cls': _class_identifier}
 
-    filter_parameters = Sample.filter_parameters + [
+    _filter_parameters = Sample._filter_parameters + [
         'domain',
         'domain__contains',
         'domain__startswith',
@@ -51,7 +51,7 @@ class DomainSample(Sample):
     @classmethod
     def create(cls, domain, tlp_level=0, tags=[]):
         """
-        Create a new `DomainSample` on the server.
+        Create a new :class:`DomainSample` on the server.
 
         :param domain: The domain as a string.
         :param tlp_level: The TLP-Level
@@ -64,10 +64,10 @@ class DomainSample(Sample):
 class URISample(Sample):
     schema = URISampleSchema()
     _class_identifier = 'Sample.URISample'
-    creation_point = 'sample/submit_uri'
-    default_filters = {'_cls': _class_identifier}
+    _creation_point = 'sample/submit_uri'
+    _default_filters = {'_cls': _class_identifier}
 
-    filter_parameters = Sample.filter_parameters + [
+    _filter_parameters = Sample._filter_parameters + [
         'uri',
         'uri__contains',
         'uri__startswith',
@@ -77,7 +77,7 @@ class URISample(Sample):
     @classmethod
     def create(cls, uri, tlp_level=0, tags=[]):
         """
-        Create a new `URISample` on the server.
+        Create a new :class:`URISample` on the server.
 
         :param uri: The uri as a string.
         :param tlp_level: The TLP-Level
@@ -90,10 +90,10 @@ class URISample(Sample):
 class IPSample(Sample):
     schema = IPSampleSchema()
     _class_identifier = 'Sample.IPSample'
-    creation_point = 'sample/submit_ip'
-    default_filters = {'_cls': _class_identifier}
+    _creation_point = 'sample/submit_ip'
+    _default_filters = {'_cls': _class_identifier}
 
-    filter_parameters = Sample.filter_parameters + [
+    _filter_parameters = Sample._filter_parameters + [
         'ip_address',
         'ip_address__startswith'
     ]
@@ -101,7 +101,7 @@ class IPSample(Sample):
     @classmethod
     def create(cls, ip_address, tlp_level=0, tags=[]):
         """
-        Create a new `IPSample` on the server.
+        Create a new :class:`IPSample` on the server.
 
         :param ip_address: The ip address as a string
         :param tlp_level: The TLP-Level
@@ -114,10 +114,10 @@ class IPSample(Sample):
 class FileSample(Sample):
     schema = FileSampleSchema()
     _class_identifier = 'Sample.FileSample'
-    creation_point = 'sample/submit_file'
-    default_filters = {'_cls__startswith': _class_identifier}
+    _creation_point = 'sample/submit_file'
+    _default_filters = {'_cls__startswith': _class_identifier}
 
-    filter_parameters = Sample.filter_parameters + [
+    _filter_parameters = Sample._filter_parameters + [
         'md5sum',
         'sha1sum',
         'sha256sum',
@@ -133,10 +133,10 @@ class FileSample(Sample):
     @classmethod
     def create(cls, filename, file, tlp_level=0, tags=[]):
         """
-        Create a new `FileSample` on the server.
+        Create a new :class:`FileSample` on the server.
 
         :param filename: The filename of the file
-        :param file: A `file`-like object
+        :param file: A file-like object
         :param tlp_level: The TLP-Level
         :param tags: Tags to add to the sample.
         :return: The created sample.
@@ -147,9 +147,9 @@ class FileSample(Sample):
         """
         Download and store the file of the sample.
 
-        :param file: A `file` object to store the file.
+        :param file: A file-like object to store the file.
         """
-        con = ConnectionManager().get_connection(self.connection_alias)
+        con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.file, file, append_base_url=False)
 
     @contextmanager
@@ -158,7 +158,8 @@ class FileSample(Sample):
         Contextmanager to get a temporary copy of the file of the sample.
 
         The file will automatically be closed and removed after use.
-        :return: A `file`-like object.
+
+        :return: A file-like object.
         """
         with tempfile.NamedTemporaryFile() as tmp:
             self.download_to_file(tmp)
@@ -168,4 +169,4 @@ class FileSample(Sample):
 class ExecutableBinarySample(FileSample):
     schema = ExecutableBinarySampleSchema()
     _class_identifier = 'Sample.FileSample.ExecutableBinarySample'
-    default_filters = {'_cls': _class_identifier}
+    _default_filters = {'_cls': _class_identifier}
