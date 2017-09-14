@@ -17,7 +17,7 @@ class SwitchConnectionTestCase(HTTMockTestCase):
         with SwitchConnection(Report, 'secondary') as ModifiedReport, HTTMock(mass_mock_result):
             report = ModifiedReport.get('58362185a7a7f10843133337')
 
-        self.assertEqual(report.connection_alias, 'secondary')
+        self.assertEqual(report._connection_alias, 'secondary')
 
     def test_retrieving_subclass_with_non_default_connection(self):
         @all_requests
@@ -30,7 +30,7 @@ class SwitchConnectionTestCase(HTTMockTestCase):
         with SwitchConnection(Sample, 'secondary') as Sample1, HTTMock(mass_mock_result):
             sample = Sample1.get('580a2429a7a7f126d0cc0d10')
 
-        self.assertEqual(sample.connection_alias, 'secondary')
+        self.assertEqual(sample._connection_alias, 'secondary')
 
     def test_resetting_active_connection_after_switch(self):
         @all_requests

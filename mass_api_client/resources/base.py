@@ -13,15 +13,15 @@ class Ref:
 
 class BaseResource:
     schema = None
-    endpoint = None
-    creation_point = None
-    filter_parameters = []
-    default_filters = {}
-    connection_alias = 'default'
+    _endpoint = None
+    _creation_point = None
+    _filter_parameters = []
+    _default_filters = {}
+    _connection_alias = 'default'
 
     def __init__(self, connection_alias, **kwargs):
         # Store current connection, in case the connection gets switched later on.
-        self.connection_alias = connection_alias
+        self._connection_alias = connection_alias
         self.__dict__.update(kwargs)
 
     @classmethod
@@ -40,11 +40,11 @@ class BaseResource:
 
     @classmethod
     def _create_instance_from_data(cls, data):
-        return cls(cls.connection_alias, **data)
+        return cls(cls._connection_alias, **data)
 
     @classmethod
     def _get_detail_from_url(cls, url, append_base_url=True):
-        con = ConnectionManager().get_connection(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls._connection_alias)
 
         deserialized = cls._deserialize(con.get_json(url, append_base_url=append_base_url))
         return cls._create_instance_from_data(deserialized)
@@ -54,7 +54,7 @@ class BaseResource:
         if params is None:
             params = {}
 
-        con = ConnectionManager().get_connection(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls._connection_alias)
         next_url = url
 
         while next_url is not None:
@@ -73,7 +73,7 @@ class BaseResource:
         if params is None:
             params = {}
 
-        con = ConnectionManager().get_connection(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls._connection_alias)
         deserialized = cls._deserialize(con.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
         objects = [cls._create_instance_from_data(detail) for detail in deserialized]
 
@@ -81,9 +81,9 @@ class BaseResource:
 
     @classmethod
     def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, **kwargs):
-        con = ConnectionManager().get_connection(cls.connection_alias)
+        con = ConnectionManager().get_connection(cls._connection_alias)
         if not url:
-            url = '{}/'.format(cls.creation_point)
+            url = '{}/'.format(cls._creation_point)
         serialized, errors = cls.schema.dump(kwargs)
 
         if additional_binary_files or additional_json_files or force_multipart:
@@ -99,18 +99,19 @@ class BaseResource:
     def get(cls, identifier):
         """
         Fetch a single object.
+
         :param identifier: The unique identifier of the object
         :return: The retrieved object
         """
-        return cls._get_detail_from_url('{}/{}/'.format(cls.endpoint, identifier))
+        return cls._get_detail_from_url('{}/{}/'.format(cls._endpoint, identifier))
 
     @classmethod
     def items(cls):
-        return cls._get_iter_from_url('{}/'.format(cls.endpoint), params=cls.default_filters)
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
 
     @classmethod
     def all(cls):
-        return cls._get_list_from_url('{}/'.format(cls.endpoint), params=cls.default_filters)
+        return cls._get_list_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
 
     @classmethod
     def query(cls, **kwargs):
@@ -119,12 +120,12 @@ class BaseResource:
 
         :param kwargs: The query parameters. The key is the filter parameter and the value is the value to search for.
         :return: The list of matching objects
-        :raises A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
+        :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
         """
-        params = dict(cls.default_filters)
+        params = dict(cls._default_filters)
 
         for key, value in kwargs.items():
-            if key in cls.filter_parameters:
+            if key in cls._filter_parameters:
                 if isinstance(value, datetime):
                     params[key] = value.strftime('%Y-%m-%dT%H:%M:%S+00:00')
                 else:
@@ -132,7 +133,7 @@ class BaseResource:
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_iter_from_url('{}/'.format(cls.endpoint), params=params)
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
