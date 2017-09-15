@@ -49,7 +49,7 @@ class Report(BaseResource):
         if analysis_date is None:
             analysis_date = datetime.datetime.now()
 
-        url = cls.creation_point.format(scheduled_analysis=scheduled_analysis.id)
+        url = cls._creation_point.format(scheduled_analysis=scheduled_analysis.id)
         return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, force_multipart=True)
