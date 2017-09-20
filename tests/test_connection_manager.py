@@ -4,6 +4,7 @@ import tempfile
 import requests
 from httmock import urlmatch, HTTMock
 
+from mass_api_client import ConnectionManager
 from tests.httmock_test_case import HTTMockTestCase
 
 
@@ -74,3 +75,17 @@ class MASSApiTestCase(HTTMockTestCase):
             self.connection.download_to_file('file', tmpfile)
             tmpfile.seek(0)
             self.assertEqual(data_file.read(), tmpfile.read())
+
+    def test_url_formats(self):
+        cm = ConnectionManager()
+        cm.register_connection(api_key=self.api_key, base_url='http://localhost/api', alias='test')
+
+        @urlmatch(netloc=r'localhost', path=r'/api/json')
+        def mass_mock_get_json(url, request):
+            self.assertAuthorized(request)
+            return json.dumps(self.example_data)
+
+        with HTTMock(mass_mock_get_json):
+            response = cm.get_connection('test').get_json('json', append_base_url=True)
+
+        self.assertEqual(self.example_data, response)

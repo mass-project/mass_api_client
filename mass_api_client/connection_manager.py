@@ -103,6 +103,9 @@ class ConnectionManager:
                         Use a tuple to set these values separately or None to wait forever.
         :return:
         """
+        if not base_url.endswith('/'):
+            base_url += '/'
+
         self._connections[alias] = Connection(api_key, base_url, timeout)
 
 
