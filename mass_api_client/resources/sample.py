@@ -52,9 +52,9 @@ class Sample(BaseResource):
 
     def contains_file(self):
         if 'file' in self.unique_features:
-            return true
+            return True
         else:
-            return false
+            return False
 
     def download_to_file(self, file):
         """
