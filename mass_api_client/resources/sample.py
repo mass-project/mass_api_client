@@ -8,8 +8,9 @@ from .base import BaseResource
 
 
 class Sample(BaseResource):
-    schema = SampleSchema() 
+    schema = SampleSchema()
     _endpoint = 'sample'
+    _creation_point = _endpoint
 
     _filter_parameters = [
         'delivery_date__lte',
