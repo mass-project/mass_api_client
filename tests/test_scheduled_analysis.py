@@ -23,4 +23,4 @@ class ScheduledAnalysisTestCase(SerializationTestCase, HTTMockTestCase):
             with HTTMock(mass_mock):
                 scheduled_analysis = ScheduledAnalysis._create_instance_from_data(json.load(data_file))
                 sample = scheduled_analysis.get_sample()
-                self.assertEqual(sample.file_size, 924449)
+                self.assertEqual(sample.unique_features['file']['file_size'], 10302)

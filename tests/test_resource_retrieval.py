@@ -8,7 +8,7 @@ from mass_api_client.resources import AnalysisSystem
 from mass_api_client.resources import AnalysisSystemInstance
 from mass_api_client.resources import Report
 from mass_api_client.resources import ScheduledAnalysis
-from mass_api_client.resources.sample import Sample, DomainSample, FileSample, IPSample, ExecutableBinarySample
+from mass_api_client.resources.sample import Sample
 from tests.httmock_test_case import HTTMockTestCase
 
 
@@ -23,8 +23,8 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return json.dumps(data)
 
         with HTTMock(mass_mock_detail):
-            obj = resource.get(identifier)
-            self.assertEqual(data, obj._to_json())
+            obj = resource.get(identifier)._to_json()
+            self.assertEqual(data, obj)
 
     def assertCorrectHTTPListRetrieval(self, resource, path, data_path):
         with open(data_path) as data_file:
@@ -57,11 +57,11 @@ class ReportRetrievalTestCase(HTTMockTestCase):
 
         self.assertEqual(len(obj_list), 4)
 
-    def test_querying_file_samples(self):
+    def test_querying_samples(self):
         with open('tests/data/file_sample_list.json') as data_file:
             data = json.load(data_file)
 
-        params = {'_cls__startswith': 'Sample.FileSample', 'md5sum': 'ee0fe7202aa7c30293cc7897e8c67837'}
+        params = {'tags__all': 'extension:bin'}
 
         @all_requests
         def mass_mock_result(url, request):
@@ -71,14 +71,14 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return json.dumps(data)
 
         with HTTMock(mass_mock_result):
-            obj_list = FileSample.query(md5sum=params['md5sum'])
+            obj_list = Sample.query(tags__all=params['tags__all'])
             for data_obj, py_obj in zip(data['results'], obj_list):
                 self.assertEqual(data_obj, py_obj._to_json())
 
     def test_downloading_sample_file(self):
         test_file_path = 'tests/data/test_data'
 
-        @urlmatch(netloc=r'localhost', path=r'/api/sample/580a2429a7a7f126d0cc0d10/download/')
+        @urlmatch(netloc=r'localhost', path=r'/api/sample/59f7908215b77f2a3b562840/download/')
         def mass_mock_file(url, request):
             self.assertAuthorized(request)
             with open(test_file_path, 'rb') as data_file:
@@ -86,8 +86,8 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return content
 
         with open('tests/data/file_sample.json') as f:
-            data = FileSample._deserialize(json.load(f))
-            file_sample = FileSample._create_instance_from_data(data)
+            data = Sample._deserialize(json.load(f))
+            file_sample = Sample._create_instance_from_data(data)
 
         with HTTMock(mass_mock_file), tempfile.TemporaryFile() as tmpfile, open(test_file_path, 'rb') as data_file:
             file_sample.download_to_file(tmpfile)
@@ -136,7 +136,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             Sample.query(invalid_filter='example')
 
     def test_getting_sample_list(self):
-        self.assertCorrectHTTPListRetrieval(Sample, r'/api/sample/', 'tests/data/sample_list.json')
+        self.assertCorrectHTTPListRetrieval(Sample, r'/api/sample/', 'tests/data/file_sample_list.json')
 
     def test_getting_sample_iter(self):
         self.assertCorrectHTTPIterRetrieval(Sample, r'/api/sample/', ['tests/data/sample_list_with_paging_1.json', 'tests/data/sample_list_with_paging_2.json'])
@@ -163,27 +163,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
                                               r'/api/report/58362185a7a7f10843133337/',
                                               'tests/data/report.json')
 
-    def test_getting_ip_sample_detail(self):
-        self.assertCorrectHTTPDetailRetrieval(IPSample, '580a1667a7a7f11628e905eb',
-                                              r'/api/sample/580a1667a7a7f11628e905eb/',
-                                              'tests/data/ip_sample.json')
-
-    def test_getting_executable_binary_sample_detail(self):
-        self.assertCorrectHTTPDetailRetrieval(ExecutableBinarySample, '5822057fa7a7f10cc420e3b7',
-                                              r'/api/sample/5822057fa7a7f10cc420e3b7/',
-                                              'tests/data/executable_binary_sample.json')
-
-    def test_getting_domain_sample_detail(self):
-        self.assertCorrectHTTPDetailRetrieval(DomainSample, '580a2413a7a7f126d0cc0d0a',
-                                              r'/api/sample/580a2413a7a7f126d0cc0d0a/',
-                                              'tests/data/domain_sample.json')
-
-    def test_getting_file_sample_detail(self):
-        self.assertCorrectHTTPDetailRetrieval(FileSample, '580a2429a7a7f126d0cc0d10',
-                                              r'/api/sample/580a2429a7a7f126d0cc0d10/',
+    def test_getting_sample_detail(self):
+        self.assertCorrectHTTPDetailRetrieval(Sample, '59f7908215b77f2a3b562840',
+                                              r'/api/sample/59f7908215b77f2a3b562840/',
                                               'tests/data/file_sample.json')
-
-    def test_getting_scheduled_analysis(self):
-        self.assertCorrectHTTPDetailRetrieval(ScheduledAnalysis, '5836367da7a7f1084313338d',
-                                              r'/api/scheduled_analysis/5836367da7a7f1084313338d/',
-                                              'tests/data/scheduled_analysis.json')

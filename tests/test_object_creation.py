@@ -57,8 +57,8 @@ class ObjectCreationTestCase(HTTMockTestCase):
             self.analysis_system_instance = AnalysisSystemInstance._create_instance_from_data(data)
 
         with open('tests/data/file_sample.json') as f:
-            data = FileSample._deserialize(json.load(f))
-            self.file_sample = FileSample._create_instance_from_data(data)
+            data = Sample._deserialize(json.load(f))
+            self.file_sample = Sample._create_instance_from_data(data)
 
     def test_creating_analysis_system(self):
         data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': ''}
@@ -94,7 +94,7 @@ class ObjectCreationTestCase(HTTMockTestCase):
     def test_creating_file_sample(self):
         with open('tests/data/test_data', 'rb') as file:
             data = {'tlp_level': 0, 'tags': []}
-            self.assertCorrectHTTPDetailCreationWithFile(FileSample, r'/api/sample/submit_file/', data,
+            self.assertCorrectHTTPDetailCreationWithFile(Sample, r'/api/sample/', data,
                                                          'tests/data/file_sample.json', 'test_data', file)
 
     def test_creating_analysis_request(self):
