@@ -8,11 +8,14 @@ from tests.httmock_test_case import HTTMockTestCase
 
 
 class ObjectCreationTestCase(HTTMockTestCase):
-    def assertCorrectHTTPDetailCreation(self, resource, path, metadata, data_path):
+    def assertCorrectHTTPDetailCreation(self, resource, path, metadata, data_path, unique_features=None):
         with open(data_path) as data_file:
             response_data = json.load(data_file)
 
-        data = {}
+        if unique_features:
+            data = {'unique_features': unique_features}
+        else:
+            data = {}
         for key, value in metadata.items():
             if isinstance(value, BaseResource):
                 data[key] = value.url
@@ -27,22 +30,31 @@ class ObjectCreationTestCase(HTTMockTestCase):
             return json.dumps(response_data)
 
         with HTTMock(mass_mock_creation):
-            obj = resource.create(**metadata)
+            parameters = dict(metadata)
+            if unique_features:
+                parameters.update(unique_features)
+            obj = resource.create(**parameters)
             self.assertEqual(response_data, obj._to_json())
 
-    def assertCorrectHTTPDetailCreationWithFile(self, resource, path, metadata, data_path, filename, file):
+    def assertCorrectHTTPDetailCreationWithFile(self, resource, path, metadata, data_path, filename, file, unique_features=None):
         with open(data_path) as data_file:
             response_data = json.load(data_file)
 
         @urlmatch(netloc=r'localhost', path=path)
         def mass_mock_creation(url, request):
+            data = dict(metadata)
+            if isinstance(unique_features, dict):
+                data['unique_features'] = unique_features
             self.assertAuthorized(request)
             self.assertHasFile(request, 'file', filename, file)
-            self.assertHasForm(request, 'metadata', json.dumps(metadata), content_type='application/json')
+            self.assertHasForm(request, 'metadata', json.dumps(data), content_type='application/json')
             return json.dumps(response_data)
 
         with HTTMock(mass_mock_creation):
-            obj = resource.create(filename=filename, file=file, **metadata)
+            parameters = dict(metadata)
+            if unique_features:
+                parameters.update(unique_features)
+            obj = resource.create(filename=filename, file=file, **parameters)
             self.assertEqual(response_data, obj._to_json())
 
     def setUp(self):
@@ -78,24 +90,28 @@ class ObjectCreationTestCase(HTTMockTestCase):
                                              'tests/data/scheduled_analysis.json')
 
     def test_creating_domain_sample(self):
-        data = {'domain': 'uni-bonn.de', 'tlp_level': 0, 'tags': []}
-        self.assertCorrectHTTPDetailCreation(DomainSample, r'/api/sample/submit_domain/', data,
-                                             'tests/data/domain_sample.json')
+        data = {'tlp_level': 0, 'tags': []}
+        unique_features = {'domain': 'uni-bonn.de'}
+        self.assertCorrectHTTPDetailCreation(Sample, r'/api/sample/', data,
+                                             'tests/data/domain_sample.json', unique_features)
 
     def test_creating_ip_sample(self):
-        data = {'ip_address': '192.168.1.1', 'tlp_level': 0, 'tags': []}
-        self.assertCorrectHTTPDetailCreation(IPSample, r'/api/sample/submit_ip/', data,
-                                             'tests/data/ip_sample.json')
+        data = {'tlp_level': 0, 'tags': []}
+        unique_features = {'ipv4': '192.168.1.1'}
+        self.assertCorrectHTTPDetailCreation(Sample, r'/api/sample/', data,
+                                             'tests/data/ip_sample.json', unique_features)
 
     def test_creating_uri_sample(self):
-        data = {'uri': 'http://uni-bonn.de/test', 'tlp_level': 0, 'tags': []}
-        self.assertCorrectHTTPDetailCreation(URISample, r'/api/sample/submit_uri/', data, 'tests/data/uri_sample.json')
+        data = {'tlp_level': 0, 'tags': []}
+        unique_features = {'uri': 'http://uni-bonn.de/test'}
+        self.assertCorrectHTTPDetailCreation(Sample, r'/api/sample/', data,
+                                             'tests/data/uri_sample.json', unique_features)
 
     def test_creating_file_sample(self):
         with open('tests/data/test_data', 'rb') as file:
             data = {'tlp_level': 0, 'tags': []}
             self.assertCorrectHTTPDetailCreationWithFile(Sample, r'/api/sample/', data,
-                                                         'tests/data/file_sample.json', 'test_data', file)
+                                                         'tests/data/file_sample.json', 'test_data', file, {})
 
     def test_creating_analysis_request(self):
         data = {

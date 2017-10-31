@@ -1,17 +1,14 @@
 {
-  "_cls": "Sample.URISample",
-  "delivery_date": "2017-01-07T15:28:55+00:00",
-  "dispatched_to": [
-    "http://localhost:5000/api/analysis_system/croax/",
-    "http://localhost:5000/api/analysis_system/strings/",
-    "http://localhost:5000/api/analysis_system/unpacker/"
+  "delivery_dates": [
+    "2017-10-31T22:12:54+00:00"
   ],
-  "first_seen": "2017-01-07T15:28:55+00:00",
-  "id": "5871093715b77f137b3e95b7",
-  "tags": [
-    "sample-type:urisample"
-  ],
+  "dispatched_to": [],
+  "first_seen": "2017-10-31T22:12:54+00:00",
+  "id": "59f8f56615b77f0bf5f69bc9",
+  "tags": [],
   "tlp_level": 0,
-  "uri": "http://uni-bonn.de/test",
-  "url": "http://localhost:5000/api/sample/5871093715b77f137b3e95b7/"
+  "unique_features": {
+    "uri": "http://uni-bonn.de/test"
+  },
+  "url": "http://localhost:5000/api/sample/59f8f56615b77f0bf5f69bc9/"
 }

@@ -80,14 +80,38 @@ class Sample(BaseResource):
             yield tmp
 
     @classmethod
-    def create_with_file(cls, filename, file, tlp_level=0, tags=[]):
+    def create(cls, uri=None, domain=None, port=None, ipv4=None, ipv6=None, filename=None, file=None, tlp_level=0, tags=None):
         """
         Create a new :class:`Sample` on the server.
 
+        :param uri: An URI
+        :param domain: A domain name
+        :param port: A port number
+        :param ipv4: An IPv4 address
+        :param ipv6: An IPv6 address
         :param filename: The filename of the file
         :param file: A file-like object
         :param tlp_level: The TLP-Level
         :param tags: Tags to add to the sample.
         :return: The created sample.
         """
-        return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags)
+        unique_features = {}
+        if uri:
+            unique_features['uri'] = uri
+        if domain:
+            unique_features['domain'] = domain
+        if port:
+            unique_features['port'] = port
+        if ipv4:
+            unique_features['ipv4'] = ipv4
+        if ipv6:
+            unique_features['ipv6'] = ipv6
+        if not tags:
+            tags = []
+        if file and filename:
+            return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags, unique_features=unique_features)
+        elif bool(file) != bool(filename):
+            raise ValueError('Either file or filename is set, but not both.')
+        else:
+            return cls._create(tlp_level=tlp_level, tags=tags, unique_features=unique_features)
+

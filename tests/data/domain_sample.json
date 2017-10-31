@@ -1,13 +1,14 @@
 {
-  "_cls": "Sample.DomainSample",
-  "delivery_date": "2016-10-21T14:20:03+00:00",
-  "dispatched_to": [],
-  "domain": "uni-bonn.de",
-  "first_seen": "2016-10-21T14:20:03+00:00",
-  "id": "580a2413a7a7f126d0cc0d0a",
-  "tags": [
-    "sample-type:domainsample"
+  "delivery_dates": [
+    "2017-10-30T22:29:28+00:00"
   ],
+  "dispatched_to": [],
+  "first_seen": "2017-10-30T22:29:28+00:00",
+  "id": "59f7a7c815b77f2a3b562842",
+  "tags": [],
   "tlp_level": 0,
-  "url": "http://localhost:5000/api/sample/580a2413a7a7f126d0cc0d0a/"
+  "unique_features": {
+    "domain": "uni-bonn.de"
+  },
+  "url": "http://localhost:5000/api/sample/59f7a7c815b77f2a3b562842/"
 }
