@@ -1,7 +1,7 @@
 from requests.exceptions import HTTPError
 
 from mass_api_client.schemas import SampleRelationTypeSchema, SampleRelationSchema
-from .base_with_subclasses import BaseResource
+from .base import BaseResource
 from .sample import Sample
 
 
