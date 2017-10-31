@@ -74,7 +74,8 @@ class BaseResource:
             params = {}
 
         con = ConnectionManager().get_connection(cls._connection_alias)
-        deserialized = cls._deserialize(con.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
+        data = con.get_json(url, params=params, append_base_url=append_base_url)['results']
+        deserialized = cls._deserialize(data, many=True)
         objects = [cls._create_instance_from_data(detail) for detail in deserialized]
 
         return objects
