@@ -63,6 +63,8 @@ class Sample(BaseResource):
 
         :param file: A file-like object to store the file.
         """
+        if not self.contains_file():
+            raise RuntimeError('The sample does not contain a file.')
         con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.url + 'download/', file, append_base_url=False)
 
