@@ -140,10 +140,6 @@ class BaseResource:
         con = ConnectionManager().get_connection(self.connection_alias)
         con.delete(self.url, append_base_url=False)
 
-    def delete(self):
-        con = ConnectionManager().get_connection(self.connection_alias)
-        con.delete(self.url, append_base_url=False)
-
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
 
