@@ -108,11 +108,21 @@ class BaseResource:
 
     @classmethod
     def items(cls):
+        """
+        Get an iterator for all objects.
+
+        :return: The iterator.
+        """
         return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
 
     @classmethod
     def all(cls):
-        return cls._get_list_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
+        """
+        Download and return all objects.
+
+        :return: The list of objects.
+        """
+        return [x for x in cls.items()]
 
     @classmethod
     def query(cls, **kwargs):
