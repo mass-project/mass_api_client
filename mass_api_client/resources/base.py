@@ -123,6 +123,27 @@ class BaseResource:
         :return: The list of matching objects
         :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
         """
+        params = cls._get_query_params(**kwargs)
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
+
+    @classmethod
+    def count(cls, **kwargs):
+        """
+        Get the number of objects matching the query parameters.
+        The parameters are identical to those used in :func:`~mass_api_client.resources.base.query`.
+
+        :param kwargs: The query parameters. The key is the filter parameter and the value is the value to search for.
+        :return: The number of matching objects.
+        :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
+        """
+        con = ConnectionManager().get_connection(cls._connection_alias)
+        params = cls._get_query_params(**kwargs)
+        params['count'] = ''
+
+        return con.get_json('{}/'.format(cls._endpoint), params=params)['count']
+
+    @classmethod
+    def _get_query_params(cls, **kwargs):
         params = dict(cls._default_filters)
 
         for key, value in kwargs.items():
@@ -134,7 +155,7 @@ class BaseResource:
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
+        return params
 
     def delete(self):
         con = ConnectionManager().get_connection(self.connection_alias)
