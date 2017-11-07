@@ -27,6 +27,7 @@ if __name__ == "__main__":
     process_analyses(analysis_system_instance, size_analysis, sleep_time=7)
 """
 import logging
+import signal
 import time
 from sys import exc_info
 from traceback import format_exception, print_tb
@@ -85,13 +86,20 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, catc
     :param analysis_method: A function or method which analyses a scheduled analysis. The function must not take further arguments.
     :param sleep_time: Time to wait between polls to the MASS server
     """
+
+    def exit_analysis_process(signum, frame):
+        logging.debug('Deleting AnalysisSystemInstance...')
+        analysis_system_instance.delete()
+        logging.debug('Shutting down.')
+        exit(0)
+
+    signal.signal(signal.SIGINT, exit_analysis_process)
+    signal.signal(signal.SIGTERM, exit_analysis_process)
+
     while True:
         for scheduled_analysis in analysis_system_instance.get_scheduled_analyses():
             try:
                 analysis_method(scheduled_analysis)
-            except KeyboardInterrupt:
-                logging.debug('Shutting down.')
-                return
             except Exception:
                 if not catch_exceptions:
                     raise
