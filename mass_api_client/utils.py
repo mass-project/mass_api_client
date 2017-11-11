@@ -77,7 +77,7 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     return analysis_system_instance
 
 
-def process_analyses(analysis_system_instance, analysis_method, sleep_time, catch_exceptions=False):
+def process_analyses(analysis_system_instance, analysis_method, sleep_time, delete_instance_on_exit=False, catch_exceptions=False):
     """Process all analyses which are scheduled for the analysis system instance.
 
     This function does not terminate on its own, give it a SIGINT or Ctrl+C to stop.
@@ -85,11 +85,14 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, catc
     :param analysis_system_instance: The analysis system instance for which the analyses are scheduled.
     :param analysis_method: A function or method which analyses a scheduled analysis. The function must not take further arguments.
     :param sleep_time: Time to wait between polls to the MASS server
+    :param delete_instance_on_exit: If true remove the analysis_system_instance on the server before exit.
+    :param catch_exceptions: Catch all exceptions during analysis and create a failure report on the server instead of termination.
     """
 
     def exit_analysis_process(signum, frame):
-        logging.debug('Deleting AnalysisSystemInstance...')
-        analysis_system_instance.delete()
+        if delete_instance_on_exit:
+            logging.debug('Deleting AnalysisSystemInstance...')
+            analysis_system_instance.delete()
         logging.debug('Shutting down.')
         exit(0)
 
