@@ -72,6 +72,14 @@ class ObjectCreationTestCase(HTTMockTestCase):
             data = Sample._deserialize(json.load(f))
             self.file_sample = Sample._create_instance_from_data(data)
 
+        with open('tests/data/sample_relation_type.json') as f:
+            data = SampleRelationType._deserialize(json.load(f))
+            self.relation_type = SampleRelationType._create_instance_from_data(data)
+
+        with open('tests/data/scheduled_analysis.json') as f:
+            data = ScheduledAnalysis._deserialize(json.load(f))
+            self.scheduled_analysis = ScheduledAnalysis._create_instance_from_data(data)
+
     def test_creating_analysis_system(self):
         data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': ''}
         self.assertCorrectHTTPDetailCreation(AnalysisSystem, r'/api/analysis_system/', data,
@@ -112,6 +120,14 @@ class ObjectCreationTestCase(HTTMockTestCase):
             data = {'tlp_level': 0, 'tags': []}
             self.assertCorrectHTTPDetailCreationWithFile(Sample, r'/api/sample/', data,
                                                          'tests/data/file_sample.json', 'test_data', file, {})
+
+    def test_creating_sample_relation_type(self):
+        data = {'name': 'Example Relation Type', 'directed': True}
+        self.assertCorrectHTTPDetailCreation(SampleRelationType, r'/api/sample_relation_type/', data, 'tests/data/sample_relation_type.json')
+
+    def test_creating_sample_relation(self):
+        data = {'sample': self.file_sample, 'other': self.file_sample, 'relation_type': self.relation_type, 'additional_metadata': {'match': 100}}
+        self.assertCorrectHTTPDetailCreation(SampleRelation, r'/api/sample_relation/', data, 'tests/data/sample_relation.json')
 
     def test_creating_analysis_request(self):
         data = {

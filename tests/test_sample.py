@@ -29,3 +29,15 @@ class FileSampleTestCase(SerializationTestCase, HTTMockTestCase):
                 self.assertTrue(isinstance(f, tempfile._TemporaryFileWrapper))
                 f.seek(0)
                 self.assertEqual(f.read(), b'Content')
+
+    def test_convenience_functions(self):
+        with open('tests/data/file_sample.json') as f:
+            data = Sample._deserialize(json.load(f))
+        file_sample = Sample._create_instance_from_data(data)
+
+        self.assertTrue(file_sample.has_file())
+        self.assertFalse(file_sample.has_domain())
+        self.assertFalse(file_sample.has_ipv4())
+        self.assertFalse(file_sample.has_ipv6())
+        self.assertFalse(file_sample.has_port())
+        self.assertFalse(file_sample.has_uri())

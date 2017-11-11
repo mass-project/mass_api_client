@@ -1,0 +1,11 @@
+{
+  "additional_metadata": {
+    "match": 100
+  },
+  "id": "5977d07a2a63ba31db92722e",
+  "other": "http://localhost/api/sample/5977ccab2a63ba31db9271f3/",
+  "relation_type": "http://localhost/api/sample_relation_type/example/",
+  "sample": "http://localhost/api/sample/5977cf9a2a63ba31db927212/",
+  "tags": [],
+  "url": "http://localhost/api/sample_relation/5977d07a2a63ba31db92722e/"
+}
