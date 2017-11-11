@@ -51,12 +51,6 @@ class Sample(BaseResource):
     def __str__(self):
         return self.__repr__()
 
-    def contains_file(self):
-        if 'file' in self.unique_features:
-            return True
-        else:
-            return False
-
     def has_file(self):
         return 'file' in self.unique_features
 
