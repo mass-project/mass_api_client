@@ -3,14 +3,6 @@ from datetime import datetime
 from mass_api_client.connection_manager import ConnectionManager
 
 
-class Ref:
-    def __init__(self, key):
-        self.key = key
-
-    def resolve(self, obj):
-        return getattr(obj, self.key, None)
-
-
 class BaseResource:
     schema = None
     _endpoint = None
@@ -23,11 +15,6 @@ class BaseResource:
         # Store current connection, in case the connection gets switched later on.
         self._connection_alias = connection_alias
         self.__dict__.update(kwargs)
-
-    @classmethod
-    @property
-    def schema(cls):
-        return Ref('schema').resolve(cls)
 
     @classmethod
     def _deserialize(cls, data, many=False):
