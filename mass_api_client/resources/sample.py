@@ -57,6 +57,24 @@ class Sample(BaseResource):
         else:
             return False
 
+    def has_file(self):
+        return 'file' in self.unique_features
+
+    def has_ipv4(self):
+        return 'ipv4' in self.unique_features
+
+    def has_ipv6(self):
+        return 'ipv6' in self.unique_features
+
+    def has_port(self):
+        return 'port' in self.unique_features
+
+    def has_domain(self):
+        return 'domain' in self.unique_features
+
+    def has_uri(self):
+        return 'uri' in self.unique_features
+
     def download_to_file(self, file):
         """
         Download and store the file of the sample.
