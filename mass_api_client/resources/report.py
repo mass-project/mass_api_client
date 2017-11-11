@@ -2,7 +2,6 @@ import datetime
 
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
-from .analysis_system import AnalysisSystem
 from .base import BaseResource
 
 
@@ -91,4 +90,5 @@ class Report(BaseResource):
 
         :return: The retrieved object.
         """
+        from .analysis_system import AnalysisSystem
         return AnalysisSystem._get_detail_from_url(self.analysis_system, append_base_url=False)

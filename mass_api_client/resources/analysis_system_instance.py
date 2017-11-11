@@ -1,5 +1,4 @@
 from mass_api_client.schemas import AnalysisSystemInstanceSchema
-from .analysis_system import AnalysisSystem
 from .base import BaseResource
 from .scheduled_analysis import ScheduledAnalysis
 
@@ -47,6 +46,7 @@ class AnalysisSystemInstance(BaseResource):
 
         :return: The retrieved object.
         """
+        from .analysis_system import AnalysisSystem
         return AnalysisSystem._get_detail_from_url(self.analysis_system, append_base_url=False)
 
     def __repr__(self):
