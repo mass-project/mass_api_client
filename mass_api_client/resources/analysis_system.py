@@ -8,6 +8,8 @@ class AnalysisSystem(BaseResource):
     _endpoint = 'analysis_system'
     _creation_point = _endpoint
 
+    _filter_parameters = ['identifier_name', 'identifier_name__contains', 'verbose_name__contains', 'verbose_name']
+
     @classmethod
     def create(cls, identifier_name, verbose_name, tag_filter_expression=''):
         """

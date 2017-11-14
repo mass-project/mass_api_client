@@ -12,13 +12,13 @@ class Sample(BaseResource):
     _endpoint = 'sample'
     _creation_point = _endpoint
 
-    _filter_parameters = [
-        'delivery_date__lte',
-        'delivery_date__gte',
-        'first_seen__lte',
-        'first_seen__gte',
-        'tags__all'
-    ]
+    _filter_parameters = ['has_domain', 'tags__all', 'ipv6', 'uri', 'port', 'ipv6_startswith', 'ipv4_startswith',
+                          'has_ipv6', 'uri_startswith', 'first_seen__gte', 'file_sha512sum', 'delivery_date__lte',
+                          'delivery_date__gte', 'domain_endswith', 'file_shannon_entropy__gte', 'custom_unique_feature',
+                          'file_sha1sum', 'domain', 'uri_endswith', 'file_size__lte', 'file_size__gte', 'has_uri',
+                          'file_shannon_entropy__lte', 'file_sha256sum', 'has_custom_unique_feature', 'domain_contains',
+                          'file_names', 'first_seen__lte', 'domain_startswith', 'uri_contains', 'file_mime_type',
+                          'has_ipv4', 'ipv4', 'has_port', 'file_md5sum', 'has_file']
 
     def get_reports(self):
         """
@@ -94,7 +94,8 @@ class Sample(BaseResource):
             yield tmp
 
     @classmethod
-    def create(cls, uri=None, domain=None, port=None, ipv4=None, ipv6=None, filename=None, file=None, tlp_level=0, tags=None):
+    def create(cls, uri=None, domain=None, port=None, ipv4=None, ipv6=None, filename=None, file=None, tlp_level=0,
+               tags=None):
         """
         Create a new :class:`Sample` on the server.
 
@@ -123,9 +124,9 @@ class Sample(BaseResource):
         if not tags:
             tags = []
         if file and filename:
-            return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags, unique_features=unique_features)
+            return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags,
+                               unique_features=unique_features)
         elif bool(file) != bool(filename):
             raise ValueError('Either file or filename is set, but not both.')
         else:
             return cls._create(tlp_level=tlp_level, tags=tags, unique_features=unique_features)
-
