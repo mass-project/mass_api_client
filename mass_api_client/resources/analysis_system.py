@@ -1,5 +1,4 @@
 from mass_api_client.schemas import AnalysisSystemSchema
-from .analysis_request import AnalysisRequest
 from .analysis_system_instance import AnalysisSystemInstance
 from .base import BaseResource
 
@@ -32,6 +31,7 @@ class AnalysisSystem(BaseResource):
         :param parameters: Analysis system specific parameters.
         :return: The created `AnalysisRequest` object.
         """
+        from .analysis_request import AnalysisRequest
         return AnalysisRequest.create(sample, self, priority, parameters)
 
     def create_analysis_system_instance(self):
