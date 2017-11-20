@@ -4,5 +4,6 @@ from .analysis_system_instance import AnalysisSystemInstance
 from .base import BaseResource
 from .report import Report
 from .sample import Sample
-from .sample_relation import SampleRelationType, SampleRelation
+from .sample_relation import SampleRelation
+from .sample_relation_type import SampleRelationType
 from .scheduled_analysis import ScheduledAnalysis

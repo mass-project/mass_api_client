@@ -3,6 +3,7 @@ import json
 from httmock import urlmatch, HTTMock
 
 from mass_api_client.resources import *
+from mass_api_client.resources import SampleRelationType
 from mass_api_client.resources.base import BaseResource
 from tests.httmock_test_case import HTTMockTestCase
 
