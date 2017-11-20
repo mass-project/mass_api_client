@@ -84,7 +84,7 @@ class SampleRelation(BaseResource):
         """
         return Sample._get_detail_from_url(self.other, append_base_url=False)
 
-    def get_analysis_system(self):
+    def get_relation_type(self):
         """
         Retrieve the corresponding :class:`SampleRelationType` object from the server.
 

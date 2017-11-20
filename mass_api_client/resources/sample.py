@@ -12,13 +12,13 @@ class Sample(BaseResource):
     _endpoint = 'sample'
     _creation_point = _endpoint
 
-    _filter_parameters = ['has_domain', 'tags__all', 'ipv6', 'uri', 'port', 'ipv6_startswith', 'ipv4_startswith',
-                          'has_ipv6', 'uri_startswith', 'first_seen__gte', 'file_sha512sum', 'delivery_date__lte',
-                          'delivery_date__gte', 'domain_endswith', 'file_shannon_entropy__gte', 'custom_unique_feature',
-                          'file_sha1sum', 'domain', 'uri_endswith', 'file_size__lte', 'file_size__gte', 'has_uri',
-                          'file_shannon_entropy__lte', 'file_sha256sum', 'has_custom_unique_feature', 'domain_contains',
-                          'file_names', 'first_seen__lte', 'domain_startswith', 'uri_contains', 'file_mime_type',
-                          'has_ipv4', 'ipv4', 'has_port', 'file_md5sum', 'has_file']
+    _filter_parameters = ['custom_unique_feature', 'domain', 'domain_contains', 'domain_endswith', 'domain_startswith',
+                          'file_md5sum', 'file_mime_type', 'file_names', 'file_sha1sum', 'file_sha256sum',
+                          'file_sha512sum', 'file_shannon_entropy__gte', 'file_shannon_entropy__lte', 'file_size__gte',
+                          'file_size__lte', 'first_seen__gte', 'first_seen__lte', 'has_custom_unique_feature',
+                          'has_domain', 'has_file', 'has_ipv4', 'has_ipv6', 'has_port', 'has_uri', 'ipv4',
+                          'ipv4_startswith', 'ipv6', 'ipv6_startswith', 'port', 'tags__all', 'uri', 'uri_contains',
+                          'uri_endswith', 'uri_startswith']
 
     def get_reports(self):
         """

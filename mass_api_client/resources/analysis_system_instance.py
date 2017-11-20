@@ -8,6 +8,8 @@ class AnalysisSystemInstance(BaseResource):
     _endpoint = 'analysis_system_instance'
     _creation_point = _endpoint
 
+    _filter_parameters = ['analysis_system', 'last_seen__gte', 'last_seen__lte']
+
     @classmethod
     def create(cls, analysis_system):
         """

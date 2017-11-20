@@ -147,6 +147,8 @@ class BaseResource:
             if key in cls._filter_parameters:
                 if isinstance(value, datetime):
                     params[key] = value.strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                elif isinstance(value, BaseResource):
+                    params[key] = value.id
                 else:
                     params[key] = value
             else:

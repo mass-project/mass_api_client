@@ -8,6 +8,9 @@ class AnalysisRequest(BaseResource):
     _endpoint = 'analysis_request'
     _creation_point = _endpoint
 
+    _filter_parameters = ['analysis_requested__gte', 'analysis_requested__lte', 'analysis_system', 'priority',
+                          'priority__gte', 'priority__lte', 'sample']
+
     @classmethod
     def create(cls, sample, analysis_system, priority=0, parameters=None):
         """
@@ -19,7 +22,8 @@ class AnalysisRequest(BaseResource):
         :param parameters: Analysis system specific parameters.
         :return: The created :class:`AnalysisRequest` object.
         """
-        return cls._create(sample=sample.url, analysis_system=analysis_system.url, priority=priority, parameters=parameters)
+        return cls._create(sample=sample.url, analysis_system=analysis_system.url, priority=priority,
+                           parameters=parameters)
 
     def get_analysis_system(self):
         """
