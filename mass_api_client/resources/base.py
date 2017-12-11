@@ -3,10 +3,16 @@ from datetime import datetime
 from mass_api_client.connection_manager import ConnectionManager
 
 
+class NestedResource:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 class BaseResource:
     schema = None
     _endpoint = None
     _creation_point = None
+    _nested_fields = []
     _filter_parameters = []
     _default_filters = {}
     _connection_alias = 'default'
@@ -15,6 +21,19 @@ class BaseResource:
         # Store current connection, in case the connection gets switched later on.
         self._connection_alias = connection_alias
         self.__dict__.update(kwargs)
+
+        # Convert dictionaries of nested fields to resources
+        for nested in self._nested_fields:
+            prev_obj = None
+            cur_obj = self
+            for attr in nested.split('.'):
+                if not hasattr(cur_obj, attr):
+                    break
+                prev_obj = cur_obj
+                cur_obj = getattr(cur_obj, attr)
+            else:
+                resource = NestedResource(**cur_obj)
+                setattr(prev_obj, nested.split('.')[-1], resource)
 
     @classmethod
     def _deserialize(cls, data, many=False):

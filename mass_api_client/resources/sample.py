@@ -11,6 +11,7 @@ class Sample(BaseResource):
     schema = SampleSchema()
     _endpoint = 'sample'
     _creation_point = _endpoint
+    _nested_fields = ['unique_features', 'unique_features.file']
 
     _filter_parameters = ['custom_unique_feature', 'domain', 'domain_contains', 'domain_endswith', 'domain_startswith',
                           'file_md5sum', 'file_mime_type', 'file_names', 'file_sha1sum', 'file_sha256sum',
@@ -52,22 +53,22 @@ class Sample(BaseResource):
         return self.__repr__()
 
     def has_file(self):
-        return 'file' in self.unique_features
+        return 'file' in self.unique_features.__dict__
 
     def has_ipv4(self):
-        return 'ipv4' in self.unique_features
+        return 'ipv4' in self.unique_features.__dict__
 
     def has_ipv6(self):
-        return 'ipv6' in self.unique_features
+        return 'ipv6' in self.unique_features.__dict__
 
     def has_port(self):
-        return 'port' in self.unique_features
+        return 'port' in self.unique_features.__dict__
 
     def has_domain(self):
-        return 'domain' in self.unique_features
+        return 'domain' in self.unique_features.__dict__
 
     def has_uri(self):
-        return 'uri' in self.unique_features
+        return 'uri' in self.unique_features.__dict__
 
     def download_to_file(self, file):
         """
