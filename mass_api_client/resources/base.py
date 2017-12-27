@@ -20,6 +20,9 @@ class BaseResource:
     def __init__(self, connection_alias, **kwargs):
         # Store current connection, in case the connection gets switched later on.
         self._connection_alias = connection_alias
+        self._update_data(**kwargs)
+
+    def _update_data(self, **kwargs):
         self.__dict__.update(kwargs)
 
         # Convert dictionaries of nested fields to resources
@@ -178,6 +181,11 @@ class BaseResource:
     def delete(self):
         con = ConnectionManager().get_connection(self._connection_alias)
         con.delete(self.url, append_base_url=False)
+
+    def save(self):
+        con = ConnectionManager().get_connection(self._connection_alias)
+        updated_data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
+        self._update_data(**updated_data)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
