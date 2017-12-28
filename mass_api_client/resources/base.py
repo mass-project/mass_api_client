@@ -184,8 +184,9 @@ class BaseResource:
 
     def save(self):
         con = ConnectionManager().get_connection(self._connection_alias)
-        updated_data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
-        self._update_data(**updated_data)
+        data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
+        deserialized = self._deserialize(data, many=False)
+        self._update_data(**deserialized)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
