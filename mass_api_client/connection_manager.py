@@ -12,15 +12,18 @@ class Connection:
         self._default_headers = {'content-type': 'application/json',
                                  'Authorization': 'APIKEY {}'.format(api_key)}
 
-    def _request_api(self, url, append_base_url, params, method, **kwargs):
+    def _request_api(self, url, append_base_url, params, method, headers=None, **kwargs):
         if params is None:
             params = {}
 
         if append_base_url:
             url = self._base_url + url
 
+        if headers is None:
+            headers = self._default_headers
+
         request_call = getattr(requests, method)
-        r = request_call(url, headers=self._default_headers, params=params, timeout=self._timeout, **kwargs)
+        r = request_call(url, headers=headers, params=params, timeout=self._timeout, **kwargs)
         r.raise_for_status()
         return r
 
@@ -65,7 +68,7 @@ class Connection:
         for key, value in binary_files.items():
             files[key] = (value[0], value[1], 'binary/octet-stream')
 
-        r = self._request_api(url, append_base_url, params, 'post', files=files)
+        r = self._request_api(url, append_base_url, params, 'post', headers, files=files)
         if r.status_code == 204:
             return dict()
         return r.json()
