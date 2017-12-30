@@ -161,6 +161,27 @@ class BaseResource:
 
         return con.get_json('{}/'.format(cls._endpoint), params=params)['count']
 
+    def delete(self):
+        """
+        Deletes the object on the server.
+        The python instance will still exist and still contain data.
+
+        :return:
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        con.delete(self.url, append_base_url=False)
+
+    def save(self):
+        """
+        Saves the data of changed fields on the server.
+        Notice that some fields of the object might be immutable on the server and will be reset upon saving silently.
+        :return:
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
+        deserialized = self._deserialize(data, many=False)
+        self._update_data(**deserialized)
+
     @classmethod
     def _get_query_params(cls, **kwargs):
         params = dict(cls._default_filters)
@@ -177,16 +198,6 @@ class BaseResource:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
         return params
-
-    def delete(self):
-        con = ConnectionManager().get_connection(self._connection_alias)
-        con.delete(self.url, append_base_url=False)
-
-    def save(self):
-        con = ConnectionManager().get_connection(self._connection_alias)
-        data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
-        deserialized = self._deserialize(data, many=False)
-        self._update_data(**deserialized)
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
