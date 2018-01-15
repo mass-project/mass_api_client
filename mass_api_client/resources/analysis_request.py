@@ -22,6 +22,9 @@ class AnalysisRequest(BaseResource):
         :param parameters: Analysis system specific parameters.
         :return: The created :class:`AnalysisRequest` object.
         """
+        if not parameters:
+            parameters = {}
+
         return cls._create(sample=sample.url, analysis_system=analysis_system.url, priority=priority,
                            parameters=parameters)
 

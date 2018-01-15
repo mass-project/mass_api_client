@@ -175,6 +175,7 @@ class BaseResource:
         """
         Saves the data of changed fields on the server.
         Notice that some fields of the object might be immutable on the server and will be reset upon saving silently.
+
         :return:
         """
         con = ConnectionManager().get_connection(self._connection_alias)
