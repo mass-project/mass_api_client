@@ -89,6 +89,22 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
     :param catch_exceptions: Catch all exceptions during analysis and create a failure report on the server instead of termination.
     """
 
+    def execute_analysis(scheduled_analysis):
+        try:
+            analysis_method(scheduled_analysis)
+        except Exception:
+            if not catch_exceptions:
+                raise
+            e = exc_info()
+            exc_str = ''.join(format_exception(*e))
+            print_tb(e[2])
+            metadata = {
+                'exception type': e[0].__name__
+            }
+            scheduled_analysis.create_report(additional_metadata=metadata,
+                                             raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
+                                             error_message=exc_str)
+
     def exit_analysis_process(signum, frame):
         if delete_instance_on_exit:
             logging.debug('Deleting AnalysisSystemInstance...')
@@ -100,20 +116,10 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
     signal.signal(signal.SIGTERM, exit_analysis_process)
 
     while True:
-        for scheduled_analysis in analysis_system_instance.get_scheduled_analyses():
-            try:
-                analysis_method(scheduled_analysis)
-            except Exception:
-                if not catch_exceptions:
-                    raise
-                e = exc_info()
-                exc_str = ''.join(format_exception(*e))
-                print_tb(e[2])
-                metadata = {
-                    'exception type': e[0].__name__
-                }
-                scheduled_analysis.create_report(additional_metadata=metadata,
-                                                 raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
-                                                 error_message=exc_str)
-        time.sleep(sleep_time)
+        analyses = analysis_system_instance.get_scheduled_analyses()
+        for analysis in analyses:
+            execute_analysis(analysis)
+
+        if not analyses:
+            time.sleep(sleep_time)
 
