@@ -4,5 +4,6 @@
   "id": "58399e60a7a7f10cada00463",
   "priority": 0,
   "sample": "http://localhost:5000/api/sample/58399e60a7a7f10cada00461/",
+  "schedule_after": "2016-11-26T14:38:24+00:00",
   "url": "http://localhost:5000/api/analysis_request/58399e60a7a7f10cada00463/"
 }
