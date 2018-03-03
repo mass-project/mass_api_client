@@ -28,7 +28,7 @@ class UniqueSampleFeaturesSchema(Schema):
 
 
 class SampleSchema(BaseSchema):
-    delivery_dates = fields.List(cls_or_instance=fields.DateTime)
+    delivery_dates = fields.Url()
     first_seen = fields.DateTime()
     tags = fields.List(cls_or_instance=fields.Str)
     dispatched_to = fields.List(cls_or_instance=fields.Str)

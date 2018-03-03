@@ -1,7 +1,5 @@
 {
-  "delivery_dates": [
-    "2017-10-30T20:50:10+00:00"
-  ],
+  "delivery_dates": "http://localhost:5000/api/sample/59f78eef15b77f2a3b56283d/delivery_dates",
   "dispatched_to": [],
   "first_seen": "2017-10-30T20:50:10+00:00",
   "id": "59f7908215b77f2a3b562840",
