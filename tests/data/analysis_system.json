@@ -3,6 +3,7 @@
   "identifier_name": "strings",
   "information_text": null,
   "tag_filter_expression": "",
+  "time_schedule": [0],
   "url": "http://localhost:5000/api/analysis_system/strings/",
   "verbose_name": "Strings"
 }

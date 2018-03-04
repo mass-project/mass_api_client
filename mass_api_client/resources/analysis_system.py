@@ -25,7 +25,7 @@ class AnalysisSystem(BaseResource):
             time_schedule = [0]
 
         return cls._create(identifier_name=identifier_name, verbose_name=verbose_name,
-                           tag_filter_expression=tag_filter_expression, scheduling_times=time_schedule)
+                           tag_filter_expression=tag_filter_expression, time_schedule=time_schedule)
 
     def create_request(self, sample, priority=0, parameters=None):
         """
