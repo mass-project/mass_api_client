@@ -61,7 +61,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
         with open('tests/data/file_sample_list.json') as data_file:
             data = json.load(data_file)
 
-        params = {'tags__all': 'extension:bin'}
+        params = {'tags__contains': 'extension:bin'}
 
         @all_requests
         def mass_mock_result(url, request):
@@ -71,7 +71,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
             return json.dumps(data)
 
         with HTTMock(mass_mock_result):
-            obj_list = Sample.query(tags__all=params['tags__all'])
+            obj_list = Sample.query(tags__contains=params['tags__contains'])
             for data_obj, py_obj in zip(data['results'], obj_list):
                 self.assertEqual(data_obj, py_obj._to_json())
 
