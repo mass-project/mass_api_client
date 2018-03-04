@@ -39,7 +39,8 @@ from mass_api_client import resources
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='', uuid_file='uuid.txt'):
+def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='',
+                                           time_schedule=None, uuid_file='uuid.txt'):
     """Get or create an analysis system instance for the analysis system with the respective identifier.
 
     This is a function for solving a common problem with implementations of MASS analysis clients.
@@ -55,8 +56,12 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     :param identifier: Get an instance for an analysis system with the given identifier as string.
     :param verbose_name: The verbose name of the respective analysis system.
     :param tag_filter_exp: The tag filter expression as a string of the respective analysis system.
+    :param time_schedule: A list of integers. Each number represents the minutes after which a request will be scheduled.
     :return: a analysis system instance
     """
+    if time_schedule is None:
+        time_schedule = [0]
+
     if instance_uuid:
         return resources.AnalysisSystemInstance.get(instance_uuid)
 
@@ -70,7 +75,7 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     try:
         analysis_system = resources.AnalysisSystem.get(identifier)
     except requests.HTTPError:
-        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp)
+        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp, time_schedule)
     analysis_system_instance = analysis_system.create_analysis_system_instance()
     with open(uuid_file, 'w') as uuid_fp:
         uuid_fp.write(analysis_system_instance.uuid)

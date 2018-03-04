@@ -8,3 +8,4 @@ class AnalysisSystemSchema(BaseSchema):
     verbose_name = fields.Str(validate=validate.Length(max=200), required=True)
     information_text = fields.Str(allow_none=True)
     tag_filter_expression = fields.Str(validate=validate.Length(max=400), default='', required=True)
+    time_schedule = fields.List(cls_or_instance=fields.Int(), default=[0])
