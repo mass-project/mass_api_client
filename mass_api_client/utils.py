@@ -99,7 +99,8 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
             exc_str = ''.join(format_exception(*e))
             print_tb(e[2])
             metadata = {
-                'exception type': e[0].__name__
+                'exception type': e[0].__name__,
+                'exception message': e[1].args[0]
             }
             scheduled_analysis.create_report(additional_metadata=metadata,
                                              raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
