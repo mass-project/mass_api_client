@@ -94,21 +94,19 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
     :param catch_exceptions: Catch all exceptions during analysis and create a failure report on the server instead of termination.
     """
 
-    def execute_analysis(scheduled_analysis):
+    def handle_exception(scheduled_analysis, e):
+        exc_str = ''.join(format_exception(*e))
+        print_tb(e[2])
+        metadata = {
+            'exception type': e[0].__name__
+        }
+
         try:
-            analysis_method(scheduled_analysis)
-        except Exception:
-            if not catch_exceptions:
-                raise
-            e = exc_info()
-            exc_str = ''.join(format_exception(*e))
-            print_tb(e[2])
-            metadata = {
-                'exception type': e[0].__name__
-            }
             scheduled_analysis.create_report(additional_metadata=metadata,
                                              raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
                                              error_message=exc_str)
+        except Exception:
+            logging.error('Could not create a report on the server.')
 
     def exit_analysis_process(signum, frame):
         if delete_instance_on_exit:
@@ -123,7 +121,12 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
     while True:
         analyses = analysis_system_instance.get_scheduled_analyses()
         for analysis in analyses:
-            execute_analysis(analysis)
+            try:
+                analysis_method(analysis)
+            except Exception:
+                if not catch_exceptions:
+                    raise
+                handle_exception(analysis, exc_info())
 
         if not analyses:
             time.sleep(sleep_time)
