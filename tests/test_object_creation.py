@@ -84,7 +84,7 @@ class ObjectCreationTestCase(HTTMockTestCase):
 
     def test_creating_analysis_system(self):
         data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': '',
-                'time_schedule': [0]}
+                'time_schedule': [0], 'number_retries': 0, 'minutes_before_retry': 0}
         self.assertCorrectHTTPDetailCreation(AnalysisSystem, r'/api/analysis_system/', data,
                                              'tests/data/analysis_system.json')
 

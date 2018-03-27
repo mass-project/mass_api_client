@@ -5,5 +5,7 @@
   "tag_filter_expression": "",
   "time_schedule": [0],
   "url": "http://localhost:5000/api/analysis_system/strings/",
-  "verbose_name": "Strings"
+  "verbose_name": "Strings",
+  "minutes_before_retry": 0,
+  "number_retries": 0
 }

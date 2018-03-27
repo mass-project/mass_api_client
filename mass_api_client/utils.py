@@ -40,7 +40,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='',
-                                           time_schedule=None, uuid_file='uuid.txt'):
+                                           time_schedule=None, number_retries=0, minutes_before_retry=0, uuid_file='uuid.txt'):
     """Get or create an analysis system instance for the analysis system with the respective identifier.
 
     This is a function for solving a common problem with implementations of MASS analysis clients.
@@ -56,7 +56,9 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     :param identifier: Get an instance for an analysis system with the given identifier as string.
     :param verbose_name: The verbose name of the respective analysis system.
     :param tag_filter_exp: The tag filter expression as a string of the respective analysis system.
-    :param time_schedule: A list of integers. Each number represents the minutes after which a request will be scheduled.
+    :param time_schedule: A list of integers. Each number represents the minutes after which a request will be scheduled.3
+    :param number_retries: The number of times a sample will be rescheduled after a failed analysis.
+    :param minutes_before_retry: The amount of time to wait before rescheduling a sample after a failed analysis.
     :return: a analysis system instance
     """
     if time_schedule is None:
@@ -75,7 +77,7 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     try:
         analysis_system = resources.AnalysisSystem.get(identifier)
     except requests.HTTPError:
-        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp, time_schedule)
+        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp, time_schedule, number_retries, minutes_before_retry)
     analysis_system_instance = analysis_system.create_analysis_system_instance()
     with open(uuid_file, 'w') as uuid_fp:
         uuid_fp.write(analysis_system_instance.uuid)
