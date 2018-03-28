@@ -28,11 +28,11 @@ if __name__ == "__main__":
 """
 import logging
 import signal
-import time
-from sys import exc_info
 from traceback import format_exception, print_tb
 
 import requests
+import time
+from sys import exc_info
 
 from mass_api_client import resources
 
@@ -104,7 +104,7 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
         }
 
         try:
-            scheduled_analysis.create_report(additional_metadata=metadata,
+            scheduled_analysis.create_report(additional_metadata=metadata, tags=['failed_analysis'],
                                              raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
                                              error_message=exc_str)
         except Exception:
