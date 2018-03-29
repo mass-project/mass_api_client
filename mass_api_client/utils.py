@@ -98,13 +98,15 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time, dele
 
     def handle_exception(scheduled_analysis, e):
         exc_str = ''.join(format_exception(*e))
+        exc_type = e[0].__name__
         print_tb(e[2])
         metadata = {
-            'exception type': e[0].__name__
+            'exception type': exc_type
         }
 
         try:
-            scheduled_analysis.create_report(additional_metadata=metadata, tags=['failed_analysis'],
+            scheduled_analysis.create_report(additional_metadata=metadata,
+                                             tags=['failed_analysis', 'exception:{}'.format(exc_type)],
                                              raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
                                              error_message=exc_str)
         except Exception:
