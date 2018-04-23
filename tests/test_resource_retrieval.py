@@ -45,7 +45,7 @@ class ReportRetrievalTestCase(HTTMockTestCase):
 
         @urlmatch(netloc=r'localhost', path=path)
         def mass_mock_list(url, request):
-            data_file = data_paths[0] if url.query == '' else data_paths[1]
+            data_file = data_paths[0] if url.query == 'per_page=100' else data_paths[1]
             with open(data_file) as data_file:
                 data = json.load(data_file)
 
