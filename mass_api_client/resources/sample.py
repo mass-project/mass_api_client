@@ -20,7 +20,7 @@ class Sample(BaseResource):
                           'file_sha512sum', 'file_shannon_entropy__gte', 'file_shannon_entropy__lte', 'file_size__gte',
                           'file_size__lte', 'first_seen__gte', 'first_seen__lte', 'has_custom_unique_feature',
                           'has_domain', 'has_file', 'has_ipv4', 'has_ipv6', 'has_port', 'has_uri', 'ipv4',
-                          'ipv4_startswith', 'ipv6', 'ipv6_startswith', 'port', 'tags__contains', 'uri', 'uri_contains',
+                          'ipv4_startswith', 'ipv6', 'ipv6_startswith', 'port', 'tags__contains', 'tags', 'uri', 'uri_contains',
                           'uri_endswith', 'uri_startswith']
 
     def get_delivery_dates(self):

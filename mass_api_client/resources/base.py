@@ -116,13 +116,15 @@ class BaseResource:
         return cls._get_detail_from_url('{}/{}/'.format(cls._endpoint, identifier))
 
     @classmethod
-    def items(cls):
+    def items(cls, page_size=100):
         """
         Get an iterator for all objects.
 
         :return: The iterator.
         """
-        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
+        params = dict(cls._default_filters)
+        params['per_page'] = page_size
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
 
     @classmethod
     def all(cls):

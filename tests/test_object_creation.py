@@ -37,7 +37,8 @@ class ObjectCreationTestCase(HTTMockTestCase):
             obj = resource.create(**parameters)
             self.assertEqual(response_data, obj._to_json())
 
-    def assertCorrectHTTPDetailCreationWithFile(self, resource, path, metadata, data_path, filename, file, unique_features=None):
+    def assertCorrectHTTPDetailCreationWithFile(self, resource, path, metadata, data_path, filename, file,
+                                                unique_features=None):
         with open(data_path) as data_file:
             response_data = json.load(data_file)
 
@@ -82,7 +83,8 @@ class ObjectCreationTestCase(HTTMockTestCase):
             self.scheduled_analysis = ScheduledAnalysis._create_instance_from_data(data)
 
     def test_creating_analysis_system(self):
-        data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': ''}
+        data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': '',
+                'time_schedule': [0], 'number_retries': 0, 'minutes_before_retry': 0}
         self.assertCorrectHTTPDetailCreation(AnalysisSystem, r'/api/analysis_system/', data,
                                              'tests/data/analysis_system.json')
 
@@ -124,17 +126,20 @@ class ObjectCreationTestCase(HTTMockTestCase):
 
     def test_creating_sample_relation_type(self):
         data = {'name': 'Example Relation Type', 'directed': True}
-        self.assertCorrectHTTPDetailCreation(SampleRelationType, r'/api/sample_relation_type/', data, 'tests/data/sample_relation_type.json')
+        self.assertCorrectHTTPDetailCreation(SampleRelationType, r'/api/sample_relation_type/', data,
+                                             'tests/data/sample_relation_type.json')
 
     def test_creating_sample_relation(self):
-        data = {'sample': self.file_sample, 'other': self.file_sample, 'relation_type': self.relation_type, 'additional_metadata': {'match': 100}}
-        self.assertCorrectHTTPDetailCreation(SampleRelation, r'/api/sample_relation/', data, 'tests/data/sample_relation.json')
+        data = {'sample': self.file_sample, 'other': self.file_sample, 'relation_type': self.relation_type,
+                'additional_metadata': {'match': 100}}
+        self.assertCorrectHTTPDetailCreation(SampleRelation, r'/api/sample_relation/', data,
+                                             'tests/data/sample_relation.json')
 
     def test_creating_analysis_request(self):
         data = {
             'analysis_system': self.analysis_system,
             'sample': self.file_sample
-            }
+        }
 
         @urlmatch()
         def mass_server(url, request):
