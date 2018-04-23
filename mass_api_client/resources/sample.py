@@ -40,7 +40,7 @@ class Sample(BaseResource):
         :return: A list of :class:`.Report`
         """
         url = '{}reports/'.format(self.url)
-        return Report._get_list_from_url(url, append_base_url=False)
+        return Report._get_iter_from_url(url, append_base_url=False)
 
     def get_relation_graph(self, depth=None):
         """
