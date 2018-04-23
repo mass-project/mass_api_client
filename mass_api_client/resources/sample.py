@@ -1,6 +1,8 @@
 import tempfile
 from contextlib import contextmanager
 
+import dateutil
+
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.resources.report import Report
 from mass_api_client.schemas import SampleSchema
@@ -20,6 +22,16 @@ class Sample(BaseResource):
                           'has_domain', 'has_file', 'has_ipv4', 'has_ipv6', 'has_port', 'has_uri', 'ipv4',
                           'ipv4_startswith', 'ipv6', 'ipv6_startswith', 'port', 'tags__contains', 'uri', 'uri_contains',
                           'uri_endswith', 'uri_startswith']
+
+    def get_delivery_dates(self):
+        """
+        Retrieve all delivery dates of this Sample.
+
+        :return: A list of delivery dates.
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        date_strings = con.get_json(self.delivery_dates, append_base_url=False)
+        return [dateutil.parser.parse(s) for s in date_strings]
 
     def get_reports(self):
         """
