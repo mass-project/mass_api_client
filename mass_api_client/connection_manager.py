@@ -5,14 +5,19 @@ import requests
 
 
 class Connection:
-    def __init__(self, api_key, base_url, timeout):
+    def __init__(self, api_key, base_url, timeout, keep_alive):
         self._api_key = api_key
         self._base_url = base_url
         self._timeout = timeout
+        self._session = None
+        self._keep_alive = keep_alive
         self._default_headers = {'content-type': 'application/json',
                                  'Authorization': 'APIKEY {}'.format(api_key)}
 
     def _request_api(self, url, append_base_url, params, method, headers=None, **kwargs):
+        if self._keep_alive and not self._session:
+            self._session = requests.Session()
+
         if params is None:
             params = {}
 
@@ -22,7 +27,7 @@ class Connection:
         if headers is None:
             headers = self._default_headers
 
-        request_call = getattr(requests, method)
+        request_call = getattr(self._session, method) if self._keep_alive else getattr(requests, method)
         r = request_call(url, headers=headers, params=params, timeout=self._timeout, **kwargs)
         r.raise_for_status()
         return r
@@ -84,21 +89,23 @@ class ConnectionManager:
 
         return self._connections[alias]
 
-    def register_connection(self, alias, api_key, base_url, timeout=5):
+    def register_connection(self, alias, api_key, base_url, timeout=5, keep_alive=False):
         """
         Create and register a new connection.
 
-        :param alias:   The alias of the connection. If not changed with `switch_connection`,
-                        the connection with default 'alias' is used by the resources.
-        :param api_key: The private api key.
-        :param base_url: The api url including protocol, host, port (optional) and location.
-        :param timeout: The time in seconds to wait for 'connect' and 'read' respectively.
-                        Use a tuple to set these values separately or None to wait forever.
+        :param alias:       The alias of the connection. If not changed with `switch_connection`,
+                            the connection with default 'alias' is used by the resources.
+        :param api_key:     The private api key.
+        :param base_url:    The api url including protocol, host, port (optional) and location.
+        :param timeout:     The time in seconds to wait for 'connect' and 'read' respectively.
+                            Use a tuple to set these values separately or None to wait forever.
+        :param keep_alive:  If true the connection to the server will be kept alive,
+                            otherwise it will be closed after every request.
         :return:
         """
         if not base_url.endswith('/'):
             base_url += '/'
 
-        self._connections[alias] = Connection(api_key, base_url, timeout)
+        self._connections[alias] = Connection(api_key, base_url, timeout, keep_alive)
 
 
