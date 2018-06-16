@@ -14,7 +14,7 @@ class Report(BaseResource):
 
     schema = ReportSchema()
     _endpoint = 'report'
-    _creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
+    _creation_point = 'analysis_request/{analysis_request}/submit_report/'
 
     _filter_parameters = ['analysis_date__gte', 'analysis_date__lte', 'analysis_system', 'error_message__contains',
                           'sample', 'status', 'tags__all', 'upload_date__gte', 'upload_date__lte']
@@ -30,7 +30,7 @@ class Report(BaseResource):
         return self.__repr__()
 
     @classmethod
-    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None,
+    def create(cls, analysis_request, tags=None, json_report_objects=None, raw_report_objects=None,
                additional_metadata=None, analysis_date=None, failed=False, error_message=None):
         """
         Create a new report.
@@ -38,7 +38,7 @@ class Report(BaseResource):
         For convenience :func:`~mass_api_client.resources.scheduled_analysis.ScheduledAnalysis.create_report`
         of class :class:`.ScheduledAnalysis` can be used instead.
 
-        :param scheduled_analysis: The :class:`.ScheduledAnalysis` this report was created for
+        :param analysis_request: The :class:`.ScheduledAnalysis` this report was created for
         :param tags: A list of strings
         :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
         :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
@@ -54,7 +54,7 @@ class Report(BaseResource):
         if analysis_date is None:
             analysis_date = datetime.datetime.now()
 
-        url = cls._creation_point.format(scheduled_analysis=scheduled_analysis.id)
+        url = cls._creation_point.format(analysis_request=analysis_request.id)
         return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, status=int(failed), error_message=error_message,

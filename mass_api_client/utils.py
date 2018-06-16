@@ -39,8 +39,8 @@ from mass_api_client import resources
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='',
-                                           time_schedule=None, number_retries=0, minutes_before_retry=0, uuid_file='uuid.txt'):
+def get_or_create_analysis_system(identifier='', verbose_name='', tag_filter_exp='',
+                                  time_schedule=None, number_retries=0, minutes_before_retry=0):
     """Get or create an analysis system instance for the analysis system with the respective identifier.
 
     This is a function for solving a common problem with implementations of MASS analysis clients.
@@ -51,8 +51,6 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     If the analysis system does not yet exists, it is also created.
     Then an analysis system instance for the analysis system is created and the uuid is saved to the uuid_file.
 
-    :param instance_uuid: If not empty, directly gets the analysis system instance with the given uuid and tries nothing else.
-    :param uuid_file: A filepath. If not empty, tries to read an uuid from the filepath. Otherwise the uuid is later saved to this file.
     :param identifier: Get an instance for an analysis system with the given identifier as string.
     :param verbose_name: The verbose name of the respective analysis system.
     :param tag_filter_exp: The tag filter expression as a string of the respective analysis system.
@@ -64,24 +62,12 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     if time_schedule is None:
         time_schedule = [0]
 
-    if instance_uuid:
-        return resources.AnalysisSystemInstance.get(instance_uuid)
-
-    try:
-        with open(uuid_file, 'r') as uuid_fp:
-            instance_uuid = uuid_fp.read().strip()
-            return resources.AnalysisSystemInstance.get(instance_uuid)
-    except IOError:
-        logging.debug('UUID file does not exist.')
-
     try:
         analysis_system = resources.AnalysisSystem.get(identifier)
     except requests.HTTPError:
         analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp, time_schedule, number_retries, minutes_before_retry)
-    analysis_system_instance = analysis_system.create_analysis_system_instance()
-    with open(uuid_file, 'w') as uuid_fp:
-        uuid_fp.write(analysis_system_instance.uuid)
-    return analysis_system_instance
+
+    return analysis_system
 
 
 def process_analyses(analysis_system_instance, analysis_method, sleep_time, delete_instance_on_exit=False, catch_exceptions=False):

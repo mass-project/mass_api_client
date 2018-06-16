@@ -1,6 +1,5 @@
 from mass_api_client.schemas import AnalysisSystemSchema
 from mass_api_client.queue import AnalysisRequestListener
-from .analysis_system_instance import AnalysisSystemInstance
 from .base import BaseResource
 
 
@@ -43,14 +42,6 @@ class AnalysisSystem(BaseResource):
         """
         from .analysis_request import AnalysisRequest
         return AnalysisRequest.create(sample, self, priority, parameters)
-
-    def create_analysis_system_instance(self):
-        """
-        Create an instance of this AnalysisSystem on the server.
-
-        :return: The created :class:`AnalysisSystemInstance` object.
-        """
-        return AnalysisSystemInstance.create(analysis_system=self)
 
     def consume_requests(self, callback):
         """
