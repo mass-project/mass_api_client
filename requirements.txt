@@ -7,3 +7,4 @@ requests==2.18.4
 httmock==1.2.6
 marshmallow==2.15.0
 python-dateutil==2.6.1
+stomp.py==4.1.20

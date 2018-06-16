@@ -52,6 +52,10 @@ class BaseResource:
         return cls(cls._connection_alias, **data)
 
     @classmethod
+    def _get_detail_from_json(cls, data):
+        return cls._create_instance_from_data(cls._deserialize(data))
+
+    @classmethod
     def _get_detail_from_url(cls, url, append_base_url=True):
         con = ConnectionManager().get_connection(cls._connection_alias)
 
