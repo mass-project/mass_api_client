@@ -52,7 +52,7 @@ class AnalysisSystem(BaseResource):
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         q = con.get_json('{}request_queue/'.format(self.url), append_base_url=False)
-        AnalysisRequestListener(q['queue'], callback, q['user'], q['password'], q['websocket ']).run_forever()
+        AnalysisRequestListener(q['queue'], callback, q['user'], q['password'], q['websocket']).run_forever()
 
     def __repr__(self):
         return '[AnalysisSystem] {}'.format(self.identifier_name)
