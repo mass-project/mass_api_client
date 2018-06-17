@@ -1,5 +1,6 @@
 from mass_api_client.schemas import AnalysisSystemSchema
 from mass_api_client.queue import AnalysisRequestListener
+from mass_api_client.connection_manager import ConnectionManager
 from .base import BaseResource
 
 
@@ -49,7 +50,9 @@ class AnalysisSystem(BaseResource):
 
         :param callback: A callable to process the analysis request.
         """
-        AnalysisRequestListener('{}_analysis-requests'.format(self.identifier_name), callback, 'guest', 'guest').run_forever()
+        con = ConnectionManager().get_connection(self._connection_alias)
+        q = con.get_json('{}request_queue/'.format(self.url), append_base_url=False)
+        AnalysisRequestListener(q['queue'], callback, q['user'], q['password'], q['websocket ']).run_forever()
 
     def __repr__(self):
         return '[AnalysisSystem] {}'.format(self.identifier_name)

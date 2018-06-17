@@ -5,11 +5,11 @@ from time import sleep
 
 
 class QueueListener(stomp.ConnectionListener):
-    def __init__(self, queue, callback, user, password):
+    def __init__(self, queue, callback, user, password, url):
         super(QueueListener, self).__init__()
         self.callback = callback
         self.queue_id = queue
-        self.conn = WebsocketConnection()
+        self.conn = WebsocketConnection(ws_uris=[url])
         self.conn.set_listener('', self)
         self.user = user
         self.password = password
