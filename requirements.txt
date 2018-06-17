@@ -8,3 +8,4 @@ httmock==1.2.6
 marshmallow==2.15.0
 python-dateutil==2.6.1
 git+https://github.com/Silberschleier/stomp.py
+websocket-client
