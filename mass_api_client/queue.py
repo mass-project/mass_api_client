@@ -1,5 +1,7 @@
 import json
 import stomp
+from stomp.adapter import WebsocketConnection
+from time import sleep
 
 
 class QueueListener(stomp.ConnectionListener):
@@ -7,12 +9,23 @@ class QueueListener(stomp.ConnectionListener):
         super(QueueListener, self).__init__()
         self.callback = callback
         self.queue_id = queue
-        self.conn = stomp.Connection()
+        self.conn = WebsocketConnection()
         self.conn.set_listener('', self)
-        self.conn.start()
-        self.conn.connect(user, password, wait=True)
-        self.conn.subscribe(destination='/queue/{}'.format(queue), id=self.queue_id,
-                            ack='client')
+        self.user = user
+        self.password = password
+
+    def run_forever(self):
+        # TODO: find something more elegant for this workaround
+        while True:
+            self.conn.start()
+            self.conn.connect(self.user, self.password, wait=True)
+            self.conn.subscribe(destination='/queue/{}'.format(self.queue_id), id=self.queue_id,
+                                ack='client')
+
+            while self.conn.is_connected():
+                sleep(1)
+
+            self.conn.stop()
 
 
 class AnalysisRequestListener(QueueListener):

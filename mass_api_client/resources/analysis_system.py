@@ -49,7 +49,7 @@ class AnalysisSystem(BaseResource):
 
         :param callback: A callable to process the analysis request.
         """
-        AnalysisRequestListener('{}_analysis-requests'.format(self.identifier_name), callback, 'guest', 'guest')
+        AnalysisRequestListener('{}_analysis-requests'.format(self.identifier_name), callback, 'guest', 'guest').run_forever()
 
     def __repr__(self):
         return '[AnalysisSystem] {}'.format(self.identifier_name)
