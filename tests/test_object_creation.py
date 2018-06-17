@@ -66,10 +66,6 @@ class ObjectCreationTestCase(HTTMockTestCase):
             data = AnalysisSystem._deserialize(json.load(f))
             self.analysis_system = AnalysisSystem._create_instance_from_data(data)
 
-        with open('tests/data/analysis_system_instance.json') as f:
-            data = AnalysisSystemInstance._deserialize(json.load(f))
-            self.analysis_system_instance = AnalysisSystemInstance._create_instance_from_data(data)
-
         with open('tests/data/file_sample.json') as f:
             data = Sample._deserialize(json.load(f))
             self.file_sample = Sample._create_instance_from_data(data)
@@ -78,27 +74,11 @@ class ObjectCreationTestCase(HTTMockTestCase):
             data = SampleRelationType._deserialize(json.load(f))
             self.relation_type = SampleRelationType._create_instance_from_data(data)
 
-        with open('tests/data/scheduled_analysis.json') as f:
-            data = ScheduledAnalysis._deserialize(json.load(f))
-            self.scheduled_analysis = ScheduledAnalysis._create_instance_from_data(data)
-
     def test_creating_analysis_system(self):
         data = {'identifier_name': 'identifier', 'verbose_name': 'Verbose name', 'tag_filter_expression': '',
                 'time_schedule': [0], 'number_retries': 0, 'minutes_before_retry': 0}
         self.assertCorrectHTTPDetailCreation(AnalysisSystem, r'/api/analysis_system/', data,
                                              'tests/data/analysis_system.json')
-
-    def test_creating_analysis_system_instance(self):
-        data = {'analysis_system': self.analysis_system}
-        self.assertCorrectHTTPDetailCreation(AnalysisSystemInstance, r'/api/analysis_system_instance/', data,
-                                             'tests/data/analysis_system_instance.json')
-
-    def test_creating_scheduled_analysis(self):
-        data = {
-            'analysis_system_instance': self.analysis_system_instance,
-            'sample': self.file_sample}
-        self.assertCorrectHTTPDetailCreation(ScheduledAnalysis, r'/api/scheduled_analysis/', data,
-                                             'tests/data/scheduled_analysis.json')
 
     def test_creating_domain_sample(self):
         data = {'tlp_level': 0, 'tags': []}

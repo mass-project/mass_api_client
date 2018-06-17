@@ -7,26 +7,14 @@ from tests.httmock_test_case import HTTMockTestCase
 
 
 class UtilsTestCase(HTTMockTestCase):
-    def test_create_analysis_system_with_uuid(self):
+    def test_create_analysis_system(self):
         @urlmatch()
         def mass_mock(url, req):
-            return open('tests/data/analysis_system_instance.json').read()
+            return open('tests/data/analysis_system.json').read()
 
         with HTTMock(mass_mock):
-           analysis_system_instance = utils.get_or_create_analysis_system_instance("5a391093-f251-4c08-991d-26fc5e0e5793")
-           self.assertEqual(analysis_system_instance.uuid, "5a391093-f251-4c08-991d-26fc5e0e5793")
-
-    def test_create_analysis_system_without_uuid(self):
-        @urlmatch()
-        def mass_mock(url, req):
-            if url.path.endswith('strings/'):
-                return open('tests/data/analysis_system.json').read()
-            else:
-                return open('tests/data/analysis_system_instance.json').read()
-
-        with HTTMock(mass_mock):
-            analysis_system_instance = utils.get_or_create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
-            self.assertEqual(analysis_system_instance.uuid, "5a391093-f251-4c08-991d-26fc5e0e5793")
+           analysis_system = utils.get_or_create_analysis_system("strings")
+           self.assertEqual(analysis_system.identifier_name, "strings")
 
     def test_create_analysis_system_without_analysis_system(self):
         @urlmatch()
@@ -39,11 +27,11 @@ class UtilsTestCase(HTTMockTestCase):
                 return open('tests/data/analysis_system.json').read()
             if req.method == 'POST' and url.path.endswith('analysis_system_instance/'):
                 print('Posted probably an analysis system instance')
-                return open('tests/data/analysis_system_instance.json').read()
+                return open('tests/data/analysis_system.json').read()
 
         with HTTMock(mass_mock):
-            analysis_system_instance = utils.get_or_create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
-            self.assertEqual(analysis_system_instance.uuid, '5a391093-f251-4c08-991d-26fc5e0e5793')
+            analysis_system = utils.get_or_create_analysis_system(identifier='strings', verbose_name='Strings', tag_filter_exp='')
+            self.assertEqual(analysis_system.identifier_name, 'strings')
 
     @mock.patch("time.sleep", side_effect=InterruptedError)
     def test_process_analyses_without_scheduled_analyses(self, mocked_sleep):

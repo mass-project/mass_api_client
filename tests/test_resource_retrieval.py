@@ -5,9 +5,7 @@ from httmock import all_requests, urlmatch, HTTMock
 
 from mass_api_client.resources import AnalysisRequest
 from mass_api_client.resources import AnalysisSystem
-from mass_api_client.resources import AnalysisSystemInstance
 from mass_api_client.resources import Report
-from mass_api_client.resources import ScheduledAnalysis
 from mass_api_client.resources.sample import Sample
 from tests.httmock_test_case import HTTMockTestCase
 
@@ -141,17 +139,9 @@ class ReportRetrievalTestCase(HTTMockTestCase):
     def test_getting_sample_iter(self):
         self.assertCorrectHTTPIterRetrieval(Sample, r'/api/sample/', ['tests/data/sample_list_with_paging_1.json', 'tests/data/sample_list_with_paging_2.json'])
 
-    def test_getting_scheduled_analysis_list(self):
-        self.assertCorrectHTTPListRetrieval(ScheduledAnalysis, r'/api/scheduled_analysis/', 'tests/data/scheduled_analyses.json')
-
     def test_getting_analysis_system_detail(self):
         self.assertCorrectHTTPDetailRetrieval(AnalysisSystem, 'strings', r'/api/analysis_system/strings/',
                                               'tests/data/analysis_system.json')
-
-    def test_getting_analysis_system_instance_detail(self):
-        self.assertCorrectHTTPDetailRetrieval(AnalysisSystemInstance, '5a391093-f251-4c08-991d-26fc5e0e5793',
-                                              r'/api/analysis_system_instance/5a391093-f251-4c08-991d-26fc5e0e5793',
-                                              'tests/data/analysis_system_instance.json')
 
     def test_getting_analysis_request_detail(self):
         self.assertCorrectHTTPDetailRetrieval(AnalysisRequest, '58399e60a7a7f10cada00463',
