@@ -1,28 +1,28 @@
 {
-  "_cls": "Sample.FileSample",
-  "delivery_date": "2016-10-21T14:20:25+00:00",
+  "delivery_dates": "http://localhost:5000/api/sample/59f78eef15b77f2a3b56283d/delivery_dates",
   "dispatched_to": [],
-  "file": "http://localhost:5000/api/sample/580a2429a7a7f126d0cc0d10/download/",
-  "file_names": [
-    "file.pdf"
-  ],
-  "file_size": 924449,
-  "first_seen": "2016-10-21T14:20:25+00:00",
-  "id": "580a2429a7a7f126d0cc0d10",
-  "magic_string": "PDF document, version 1.5",
-  "md5sum": "ee0fe7202aa7c30293cc7897e8c67837",
-  "mime_type": "application/pdf",
-  "sha1sum": "a4f465a2f975308e0d618f40ae33c858a2949d5d",
-  "sha256sum": "63dc406a091c33118e6e5b82a3238fe719583ba6c785d1e3da2cd98f89a8feaf",
-  "sha512sum": "f0ce8675d9abf7b6158c07b595e979d8fdb676ac172eb69d4bac7c592592c9acd34abbae0e807e6f05a8e1ad6442acec1f75befb039f54952b5635bb03819173",
-  "shannon_entropy": 7.932596532206094,
-  "ssdeep_hash": "24576:Obo2gU03zHH0lo5Ari/cdEm9TaywLPfwH97QpTOj2:4o203j0lo5+8cdX9TaywLPoHBQpm2",
+  "first_seen": "2017-10-30T20:50:10+00:00",
+  "id": "59f7908215b77f2a3b562840",
   "tags": [
-    "extension:pdf",
-    "mime:application/pdf",
-    "filetype:pdf",
-    "sample-type:filesample"
+    "extension:bak",
+    "mime:text/plain"
   ],
-  "tlp_level": 2,
-  "url": "http://localhost:5000/api/sample/580a2429a7a7f126d0cc0d10/"
+  "tlp_level": 0,
+  "unique_features": {
+    "file": {
+      "file_names": [
+        "traffdata.bak"
+      ],
+      "file_size": 10302,
+      "magic_string": "ASCII text, with very long lines",
+      "md5sum": "db02b42869fbebb4f45c9d1c0ded064c",
+      "mime_type": "text/plain",
+      "sha1sum": "6b4ca5ebd456362a727e5d86f477a08cd289d8f2",
+      "sha256sum": "45f2969904ca91b71bbffdd0b903ea73b745ae81da6912cf6efbdb35bd0534c3",
+      "sha512sum": "6968017725494872be90fdcd99387c111c77c04442e6f462d9384d119f2b183c281f837428cebc676398b1c2843457eb6c1c18ace5f7336cad99626d3062735c",
+      "shannon_entropy": 3.7573031226914546,
+      "ssdeep_hash": "192:8X21uq4VHKNZQ4dQFPGJnxzJphdxSuHWwKt8d3y5wV5UJxTMQaA:39WKEenxzJ6iXKtwi5Rnd"
+    }
+  },
+  "url": "http://localhost/api/sample/59f7908215b77f2a3b562840/"
 }

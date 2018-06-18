@@ -1,70 +1,64 @@
 {
   "next": null,
+  "page": 1,
+  "page_count": 1,
   "previous": null,
   "results": [
     {
-      "_cls": "Sample.FileSample.ExecutableBinarySample",
-      "delivery_date": "2016-11-08T17:03:46+00:00",
+      "delivery_dates": "http://localhost:5000/api/sample/59f7908215b77f2a3b562840/delivery_dates",
       "dispatched_to": [],
-      "file": "http://localhost:5000/api/sample/5822057fa7a7f10cc420e3b7/download/",
-      "file_names": [
-        "executable.exe"
-      ],
-      "file_size": 109092736,
-      "filesystem_events": [],
-      "first_seen": "2016-11-08T17:03:46+00:00",
-      "id": "5822057fa7a7f10cc420e3b7",
-      "imports": [],
-      "magic_string": "PE32 executable (GUI) Intel 80386, for MS Windows, Nullsoft Installer self-extracting archive",
-      "md5sum": "98bdafb444d5c9470e48b3f0bdc95bdd",
-      "mime_type": "application/x-dosexec",
-      "registry_events": [],
-      "resources": [],
-      "sections": [],
-      "sha1sum": "90ceab62fdf6347b045bb518dba42f3131051802",
-      "sha256sum": "d986f427de825cf0d9205cfd76dfbc0ab7237b60b9682fca3343f29a18096aa3",
-      "sha512sum": "449f086c15e7cc831d1a1e6af865df2d78ba1a1c39706c4c2ac92d0faaa56794d608b167e5e3f1b1536dac39b9e8918af998853a1633ffc2bf141f3f48df8ac4",
-      "shannon_entropy": 7.998003165112367,
-      "ssdeep_hash": "3145728:6eav2yDMNmp6r/dzWev0t/FT774wflib+/dhwK8Jc4Fi2:/av2X/vKZ7vflY+/58",
-      "strings": [],
+      "first_seen": "2017-10-30T20:50:10+00:00",
+      "id": "59f7908215b77f2a3b562840",
       "tags": [
-        "extension:exe",
-        "sample-type:filesample",
-        "filetype:pe-32",
-        "filetype:windows-binary",
-        "mime:application/x-dosexec",
-        "sample-type:executablebinarysample"
+        "extension:bak",
+        "mime:text/plain"
       ],
       "tlp_level": 0,
-      "url": "http://localhost:5000/api/sample/5822057fa7a7f10cc420e3b7/"
+      "unique_features": {
+        "file": {
+          "file_names": [
+            "traffdata.bak"
+          ],
+          "file_size": 10302,
+          "magic_string": "ASCII text, with very long lines",
+          "md5sum": "db02b42869fbebb4f45c9d1c0ded064c",
+          "mime_type": "text/plain",
+          "sha1sum": "6b4ca5ebd456362a727e5d86f477a08cd289d8f2",
+          "sha256sum": "45f2969904ca91b71bbffdd0b903ea73b745ae81da6912cf6efbdb35bd0534c3",
+          "sha512sum": "6968017725494872be90fdcd99387c111c77c04442e6f462d9384d119f2b183c281f837428cebc676398b1c2843457eb6c1c18ace5f7336cad99626d3062735c",
+          "shannon_entropy": 3.7573031226914546,
+          "ssdeep_hash": "192:8X21uq4VHKNZQ4dQFPGJnxzJphdxSuHWwKt8d3y5wV5UJxTMQaA:39WKEenxzJ6iXKtwi5Rnd"
+        }
+      },
+      "url": "http://localhost:5000/api/sample/59f7908215b77f2a3b562840/"
     },
     {
-      "_cls": "Sample.FileSample",
-      "delivery_date": "2016-10-21T14:20:25+00:00",
+      "delivery_dates": "http://localhost:5000/api/sample/59f78eef15b77f2a3b56283d/delivery_dates",
       "dispatched_to": [],
-      "file": "http://localhost:5000/api/sample/580a2429a7a7f126d0cc0d10/download/",
-      "file_names": [
-        "file.pdf"
-      ],
-      "file_size": 924449,
-      "first_seen": "2016-10-21T14:20:25+00:00",
-      "id": "580a2429a7a7f126d0cc0d10",
-      "magic_string": "PDF document, version 1.5",
-      "md5sum": "ee0fe7202aa7c30293cc7897e8c67837",
-      "mime_type": "application/pdf",
-      "sha1sum": "a4f465a2f975308e0d618f40ae33c858a2949d5d",
-      "sha256sum": "63dc406a091c33118e6e5b82a3238fe719583ba6c785d1e3da2cd98f89a8feaf",
-      "sha512sum": "f0ce8675d9abf7b6158c07b595e979d8fdb676ac172eb69d4bac7c592592c9acd34abbae0e807e6f05a8e1ad6442acec1f75befb039f54952b5635bb03819173",
-      "shannon_entropy": 7.932596532206094,
-      "ssdeep_hash": "24576:Obo2gU03zHH0lo5Ari/cdEm9TaywLPfwH97QpTOj2:4o203j0lo5+8cdX9TaywLPoHBQpm2",
+      "first_seen": "2017-10-30T20:43:27+00:00",
+      "id": "59f78eef15b77f2a3b56283d",
       "tags": [
-        "extension:pdf",
-        "mime:application/pdf",
-        "filetype:pdf",
-        "sample-type:filesample"
+        "extension:bin",
+        "mime:application/octet-stream"
       ],
-      "tlp_level": 2,
-      "url": "http://localhost:5000/api/sample/580a2429a7a7f126d0cc0d10/"
+      "tlp_level": 0,
+      "unique_features": {
+        "file": {
+          "file_names": [
+            "nvrambak.bin"
+          ],
+          "file_size": 32798,
+          "magic_string": "data",
+          "md5sum": "918ee1cf1c5489e33aa9d79801592da6",
+          "mime_type": "application/octet-stream",
+          "sha1sum": "858bdb2b933f88b240a3883f9f7d586e7dd44bf7",
+          "sha256sum": "6b7867b562d7dee1e51a851db33dd6ce1249575293bf300e69bf56f3d7e183b9",
+          "sha512sum": "73f7302df11331c4f986b603715ab7285da3834c9d9a273e4b7b9aa559b4f3a509ee7e2ce66fb3b75a804a1b927d6b7d4a923eebf065fc87144245218d54d93e",
+          "shannon_entropy": 5.448557105495461,
+          "ssdeep_hash": "768:GYuPJz9RvKi6R9LiKfUlhQMmPnotYttWjfcvae07EKZB8LzAz1vV:Mv0f+KohQMmhttWj0Ts5B8LEvV"
+        }
+      },
+      "url": "http://localhost:5000/api/sample/59f78eef15b77f2a3b56283d/"
     }
   ]
 }

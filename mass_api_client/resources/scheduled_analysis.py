@@ -9,6 +9,9 @@ class ScheduledAnalysis(BaseResource):
     _endpoint = 'scheduled_analysis'
     _creation_point = _endpoint
 
+    _filter_parameters = ['analysis_scheduled__gte', 'analysis_scheduled__lte', 'analysis_system_instance', 'priority',
+                          'priority__gte', 'priority__lte', 'sample']
+
     @classmethod
     def create(cls, analysis_system_instance, sample):
         """
@@ -24,7 +27,8 @@ class ScheduledAnalysis(BaseResource):
         """
         return cls._create(analysis_system_instance=analysis_system_instance.url, sample=sample.url)
 
-    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None, analysis_date=None):
+    def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None,
+                      analysis_date=None, failed=False, error_message=None):
         """
         Create a :class:`.Report` and remove the :class:`ScheduledAnalysis` from the server.
 
@@ -35,7 +39,9 @@ class ScheduledAnalysis(BaseResource):
         :param analysis_date: :py:mod:`datetime` object of the time the report was generated. Defaults to current time.
         :return: The created :class:`.Report` object.
         """
-        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects, additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date)
+        return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects,
+                             additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date,
+                             failed=failed, error_message=error_message)
 
     def get_sample(self):
         """

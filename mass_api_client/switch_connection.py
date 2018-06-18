@@ -1,4 +1,4 @@
-from .resources import BaseResource, BaseWithSubclasses
+from .resources import BaseResource
 
 
 class SwitchConnection:
@@ -7,9 +7,7 @@ class SwitchConnection:
         self._connection_alias = connection_alias
 
     def __enter__(self):
-        if issubclass(self.resource, BaseWithSubclasses):
-            modified = self._create_modified_base_with_subclasses()
-        elif issubclass(self.resource, BaseResource):
+        if issubclass(self.resource, BaseResource):
             modified = self._create_modified_base()
         else:
             raise ValueError("'{}' is not a mass_api_client resource.".format(type(self.resource)))
@@ -23,27 +21,6 @@ class SwitchConnection:
     def _create_modified_base(self):
         class ModifiedResource(self.resource):
             _connection_alias = self._connection_alias
-
-        return ModifiedResource
-
-    def _create_modified_base_with_subclasses(self):
-        class ModifiedResource(self.resource):
-            _connection_alias = self._connection_alias
-            _unmodified_cls = self.resource
-
-            @classmethod
-            def _create_instance_from_data(cls, data):
-                subcls = cls._unmodified_cls._search_subclass(data['_cls'])
-                return subcls(cls._connection_alias, **data)
-
-            @classmethod
-            def _deserialize(cls, data, many=False):
-                if many:
-                    return [cls._deserialize(item) for item in data]
-
-                subcls = cls._unmodified_cls._search_subclass(data['_cls'])
-
-                return subcls._deserialize(data, many)
 
         return ModifiedResource
 

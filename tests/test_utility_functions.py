@@ -1,8 +1,9 @@
+from unittest import mock
+
 from httmock import HTTMock, urlmatch
+
 from mass_api_client import utils
 from tests.httmock_test_case import HTTMockTestCase
-from unittest import mock
-from requests import HTTPError
 
 
 class UtilsTestCase(HTTMockTestCase):
@@ -39,12 +40,10 @@ class UtilsTestCase(HTTMockTestCase):
             if req.method == 'POST' and url.path.endswith('analysis_system_instance/'):
                 print('Posted probably an analysis system instance')
                 return open('tests/data/analysis_system_instance.json').read()
-            self.fail('There should not be any other queries to MASS')
 
         with HTTMock(mass_mock):
             analysis_system_instance = utils.get_or_create_analysis_system_instance(instance_uuid='', identifier='strings', verbose_name='Strings', tag_filter_exp='')
             self.assertEqual(analysis_system_instance.uuid, '5a391093-f251-4c08-991d-26fc5e0e5793')
-
 
     @mock.patch("time.sleep", side_effect=InterruptedError)
     def test_process_analyses_without_scheduled_analyses(self, mocked_sleep):
@@ -61,7 +60,7 @@ class UtilsTestCase(HTTMockTestCase):
     @mock.patch("time.sleep", side_effect=InterruptedError)
     def test_process_analyses_with_scheduled_analyses(self, mocked_sleep):
         asi_mock = mock.Mock()
-        asi_mock.get_scheduled_analyses.return_value = "some_filesample"
+        asi_mock.get_scheduled_analyses.side_effect = ["some filesample", []]
         analysis_method = mock.Mock()
         analysis_method.return_value = "some report"
 

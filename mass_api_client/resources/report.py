@@ -8,12 +8,16 @@ from .base import BaseResource
 class Report(BaseResource):
     REPORT_STATUS_CODE_OK = 0
     REPORT_STATUS_CODE_FAILURE = 1
+    REPORT_STATUS_CODE_UNRECOVERABLE_FAIL = 2
 
-    REPORT_STATUS_CODES = [REPORT_STATUS_CODE_OK, REPORT_STATUS_CODE_FAILURE]
+    REPORT_STATUS_CODES = [REPORT_STATUS_CODE_OK, REPORT_STATUS_CODE_FAILURE, REPORT_STATUS_CODE_UNRECOVERABLE_FAIL]
 
     schema = ReportSchema()
     _endpoint = 'report'
     _creation_point = 'scheduled_analysis/{scheduled_analysis}/submit_report/'
+
+    _filter_parameters = ['analysis_date__gte', 'analysis_date__lte', 'analysis_system', 'error_message__contains',
+                          'sample', 'status', 'tags__all', 'upload_date__gte', 'upload_date__lte']
 
     def __init__(self, connection_alias, **kwargs):
         super(Report, self).__init__(connection_alias, **kwargs)
@@ -26,7 +30,8 @@ class Report(BaseResource):
         return self.__repr__()
 
     @classmethod
-    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None, additional_metadata=None, analysis_date=None):
+    def create(cls, scheduled_analysis, tags=None, json_report_objects=None, raw_report_objects=None,
+               additional_metadata=None, analysis_date=None, failed=False, error_message=None):
         """
         Create a new report.
 
@@ -52,7 +57,8 @@ class Report(BaseResource):
         url = cls._creation_point.format(scheduled_analysis=scheduled_analysis.id)
         return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
-                           additional_metadata=additional_metadata, force_multipart=True)
+                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
+                           force_multipart=True)
 
     @property
     def json_reports(self):
@@ -83,3 +89,12 @@ class Report(BaseResource):
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         return con.download_to_file(self.raw_report_objects[key], file, append_base_url=False)
+
+    def get_analysis_system(self):
+        """
+        Retrieve the corresponding :class:`AnaylsisSystem` object from the server.
+
+        :return: The retrieved object.
+        """
+        from .analysis_system import AnalysisSystem
+        return AnalysisSystem._get_detail_from_url(self.analysis_system, append_base_url=False)

@@ -8,6 +8,8 @@ class AnalysisSystemInstance(BaseResource):
     _endpoint = 'analysis_system_instance'
     _creation_point = _endpoint
 
+    _filter_parameters = ['analysis_system', 'last_seen__gte', 'last_seen__lte']
+
     @classmethod
     def create(cls, analysis_system):
         """
@@ -39,6 +41,15 @@ class AnalysisSystemInstance(BaseResource):
         """
         url = '{}scheduled_analyses/'.format(self.url)
         return ScheduledAnalysis._get_list_from_url(url, append_base_url=False)
+
+    def get_analysis_system(self):
+        """
+        Retrieve the corresponding :class:`AnaylsisSystem` object from the server.
+
+        :return: The retrieved object.
+        """
+        from .analysis_system import AnalysisSystem
+        return AnalysisSystem._get_detail_from_url(self.analysis_system, append_base_url=False)
 
     def __repr__(self):
         return '[AnalysisSystemInstance] {}'.format(self.uuid)

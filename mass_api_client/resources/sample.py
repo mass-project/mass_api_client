@@ -1,23 +1,37 @@
 import tempfile
 from contextlib import contextmanager
 
+import dateutil
+
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.resources.report import Report
-from mass_api_client.schemas import DomainSampleSchema, IPSampleSchema, URISampleSchema, FileSampleSchema, ExecutableBinarySampleSchema
-from .base_with_subclasses import BaseWithSubclasses
+from mass_api_client.schemas import SampleSchema
+from .base import BaseResource
 
 
-class Sample(BaseWithSubclasses):
+class Sample(BaseResource):
+    schema = SampleSchema()
     _endpoint = 'sample'
-    _class_identifier = 'Sample'
+    _creation_point = _endpoint
+    _nested_fields = ['unique_features', 'unique_features.file']
 
-    _filter_parameters = [
-        'delivery_date__lte',
-        'delivery_date__gte',
-        'first_seen__lte',
-        'first_seen__gte',
-        'tags__all'
-    ]
+    _filter_parameters = ['custom_unique_feature', 'domain', 'domain_contains', 'domain_endswith', 'domain_startswith',
+                          'file_md5sum', 'file_mime_type', 'file_names', 'file_sha1sum', 'file_sha256sum',
+                          'file_sha512sum', 'file_shannon_entropy__gte', 'file_shannon_entropy__lte', 'file_size__gte',
+                          'file_size__lte', 'first_seen__gte', 'first_seen__lte', 'has_custom_unique_feature',
+                          'has_domain', 'has_file', 'has_ipv4', 'has_ipv6', 'has_port', 'has_uri', 'ipv4',
+                          'ipv4_startswith', 'ipv6', 'ipv6_startswith', 'port', 'tags__contains', 'tags', 'uri', 'uri_contains',
+                          'uri_endswith', 'uri_startswith']
+
+    def get_delivery_dates(self):
+        """
+        Retrieve all delivery dates of this Sample.
+
+        :return: A list of delivery dates.
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        date_strings = con.get_json(self.delivery_dates, append_base_url=False)
+        return [dateutil.parser.parse(s) for s in date_strings]
 
     def get_reports(self):
         """
@@ -26,7 +40,7 @@ class Sample(BaseWithSubclasses):
         :return: A list of :class:`.Report`
         """
         url = '{}reports/'.format(self.url)
-        return Report._get_list_from_url(url, append_base_url=False)
+        return Report._get_iter_from_url(url, append_base_url=False)
 
     def get_relation_graph(self, depth=None):
         """
@@ -50,114 +64,23 @@ class Sample(BaseWithSubclasses):
     def __str__(self):
         return self.__repr__()
 
+    def has_file(self):
+        return 'file' in self.unique_features.__dict__
 
-class DomainSample(Sample):
-    schema = DomainSampleSchema()
-    _class_identifier = 'Sample.DomainSample'
-    _creation_point = 'sample/submit_domain'
-    _default_filters = {'_cls': _class_identifier}
+    def has_ipv4(self):
+        return 'ipv4' in self.unique_features.__dict__
 
-    _filter_parameters = Sample._filter_parameters + [
-        'domain',
-        'domain__contains',
-        'domain__startswith',
-        'domain__endswith'
-    ]
+    def has_ipv6(self):
+        return 'ipv6' in self.unique_features.__dict__
 
-    @classmethod
-    def create(cls, domain, tlp_level=0, tags=[]):
-        """
-        Create a new :class:`DomainSample` on the server.
+    def has_port(self):
+        return 'port' in self.unique_features.__dict__
 
-        :param domain: The domain as a string.
-        :param tlp_level: The TLP-Level
-        :param tags: Tags to add to the sample.
-        :return: The created sample.
-        """
-        return cls._create(domain=domain, tlp_level=tlp_level, tags=tags)
+    def has_domain(self):
+        return 'domain' in self.unique_features.__dict__
 
-
-class URISample(Sample):
-    schema = URISampleSchema()
-    _class_identifier = 'Sample.URISample'
-    _creation_point = 'sample/submit_uri'
-    _default_filters = {'_cls': _class_identifier}
-
-    _filter_parameters = Sample._filter_parameters + [
-        'uri',
-        'uri__contains',
-        'uri__startswith',
-        'uri__endswith'
-    ]
-
-    @classmethod
-    def create(cls, uri, tlp_level=0, tags=[]):
-        """
-        Create a new :class:`URISample` on the server.
-
-        :param uri: The uri as a string.
-        :param tlp_level: The TLP-Level
-        :param tags: Tags to add to the sample.
-        :return: The created sample.
-        """
-        return cls._create(uri=uri, tlp_level=tlp_level, tags=tags)
-      
-
-class IPSample(Sample):
-    schema = IPSampleSchema()
-    _class_identifier = 'Sample.IPSample'
-    _creation_point = 'sample/submit_ip'
-    _default_filters = {'_cls': _class_identifier}
-
-    _filter_parameters = Sample._filter_parameters + [
-        'ip_address',
-        'ip_address__startswith'
-    ]
-
-    @classmethod
-    def create(cls, ip_address, tlp_level=0, tags=[]):
-        """
-        Create a new :class:`IPSample` on the server.
-
-        :param ip_address: The ip address as a string
-        :param tlp_level: The TLP-Level
-        :param tags: Tags to add to the sample.
-        :return: The created sample.
-        """
-        return cls._create(ip_address=ip_address, tlp_level=tlp_level, tags=tags)
-
-
-class FileSample(Sample):
-    schema = FileSampleSchema()
-    _class_identifier = 'Sample.FileSample'
-    _creation_point = 'sample/submit_file'
-    _default_filters = {'_cls__startswith': _class_identifier}
-
-    _filter_parameters = Sample._filter_parameters + [
-        'md5sum',
-        'sha1sum',
-        'sha256sum',
-        'sha512sum',
-        'mime_type',
-        'file_names',
-        'file_size__lte',
-        'file_size__gte',
-        'shannon_entropy__lte',
-        'shannon_entropy__gte'
-    ]
-
-    @classmethod
-    def create(cls, filename, file, tlp_level=0, tags=[]):
-        """
-        Create a new :class:`FileSample` on the server.
-
-        :param filename: The filename of the file
-        :param file: A file-like object
-        :param tlp_level: The TLP-Level
-        :param tags: Tags to add to the sample.
-        :return: The created sample.
-        """
-        return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags)
+    def has_uri(self):
+        return 'uri' in self.unique_features.__dict__
 
     def download_to_file(self, file):
         """
@@ -165,8 +88,10 @@ class FileSample(Sample):
 
         :param file: A file-like object to store the file.
         """
+        if not self.has_file():
+            raise RuntimeError('The sample does not contain a file.')
         con = ConnectionManager().get_connection(self._connection_alias)
-        return con.download_to_file(self.file, file, append_base_url=False)
+        return con.download_to_file(self.url + 'download/', file, append_base_url=False)
 
     @contextmanager
     def temporary_file(self):
@@ -181,8 +106,40 @@ class FileSample(Sample):
             self.download_to_file(tmp)
             yield tmp
 
+    @classmethod
+    def create(cls, uri=None, domain=None, port=None, ipv4=None, ipv6=None, filename=None, file=None, tlp_level=0,
+               tags=None):
+        """
+        Create a new :class:`Sample` on the server.
 
-class ExecutableBinarySample(FileSample):
-    schema = ExecutableBinarySampleSchema()
-    _class_identifier = 'Sample.FileSample.ExecutableBinarySample'
-    _default_filters = {'_cls': _class_identifier}
+        :param uri: An URI
+        :param domain: A domain name
+        :param port: A port number
+        :param ipv4: An IPv4 address
+        :param ipv6: An IPv6 address
+        :param filename: The filename of the file
+        :param file: A file-like object
+        :param tlp_level: The TLP-Level
+        :param tags: Tags to add to the sample.
+        :return: The created sample.
+        """
+        unique_features = {}
+        if uri:
+            unique_features['uri'] = uri
+        if domain:
+            unique_features['domain'] = domain
+        if port:
+            unique_features['port'] = port
+        if ipv4:
+            unique_features['ipv4'] = ipv4
+        if ipv6:
+            unique_features['ipv6'] = ipv6
+        if not tags:
+            tags = []
+        if file and filename:
+            return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags,
+                               unique_features=unique_features)
+        elif bool(file) != bool(filename):
+            raise ValueError('Either file or filename is set, but not both.')
+        else:
+            return cls._create(tlp_level=tlp_level, tags=tags, unique_features=unique_features)

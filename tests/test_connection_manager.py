@@ -20,15 +20,39 @@ class MASSApiTestCase(HTTMockTestCase):
 
         self.assertEqual(self.example_data, response)
 
+    def test_deleting_resource(self):
+        @urlmatch(netloc=r'localhost', path=r'/api/json')
+        def mass_mock_delete(url, request):
+            self.assertAuthorized(request)
+            self.assertEqual(request.method, 'DELETE')
+            return '{}'
+
+        with HTTMock(mass_mock_delete):
+            self.connection.delete('json', append_base_url=True)
+
+    def test_patching_json(self):
+        @urlmatch(netloc=r'localhost', path=r'/api/json')
+        def mass_mock_patch_json(url, request):
+            self.assertAuthorized(request)
+            self.assertEqual(request.method, 'PATCH')
+            self.assertEqual(json.loads(request.body), self.example_data)
+            return json.dumps(self.example_data)
+
+        with HTTMock(mass_mock_patch_json):
+            response = self.connection.patch_json('json', append_base_url=True, data=self.example_data)
+
+        self.assertEqual(self.example_data, response)
+
     def test_posting_json(self):
         @urlmatch(netloc=r'localhost', path=r'/api/json')
         def mass_mock_post_json(url, request):
             self.assertAuthorized(request)
+            self.assertEqual(request.method, 'POST')
             self.assertEqual(json.loads(request.body), self.example_data)
             return json.dumps(self.example_data)
 
         with HTTMock(mass_mock_post_json):
-            response = self.connection.post_json('http://localhost/api/json', append_base_url=False, data=self.example_data)
+            response = self.connection.post_json('json', append_base_url=True, data=self.example_data)
 
         self.assertEqual(self.example_data, response)
 

@@ -26,15 +26,21 @@ if __name__ == "__main__":
                                                                       )
     process_analyses(analysis_system_instance, size_analysis, sleep_time=7)
 """
-import requests
-from mass_api_client import resources
 import logging
+import signal
+from traceback import format_exception, print_tb
+
+import requests
 import time
+from sys import exc_info
+
+from mass_api_client import resources
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='', uuid_file='uuid.txt'):
+def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verbose_name='', tag_filter_exp='',
+                                           time_schedule=None, number_retries=0, minutes_before_retry=0, uuid_file='uuid.txt'):
     """Get or create an analysis system instance for the analysis system with the respective identifier.
 
     This is a function for solving a common problem with implementations of MASS analysis clients.
@@ -50,8 +56,14 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     :param identifier: Get an instance for an analysis system with the given identifier as string.
     :param verbose_name: The verbose name of the respective analysis system.
     :param tag_filter_exp: The tag filter expression as a string of the respective analysis system.
+    :param time_schedule: A list of integers. Each number represents the minutes after which a request will be scheduled.3
+    :param number_retries: The number of times a sample will be rescheduled after a failed analysis.
+    :param minutes_before_retry: The amount of time to wait before rescheduling a sample after a failed analysis.
     :return: a analysis system instance
     """
+    if time_schedule is None:
+        time_schedule = [0]
+
     if instance_uuid:
         return resources.AnalysisSystemInstance.get(instance_uuid)
 
@@ -65,14 +77,14 @@ def get_or_create_analysis_system_instance(instance_uuid='', identifier='', verb
     try:
         analysis_system = resources.AnalysisSystem.get(identifier)
     except requests.HTTPError:
-        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp)
+        analysis_system = resources.AnalysisSystem.create(identifier, verbose_name, tag_filter_exp, time_schedule, number_retries, minutes_before_retry)
     analysis_system_instance = analysis_system.create_analysis_system_instance()
     with open(uuid_file, 'w') as uuid_fp:
         uuid_fp.write(analysis_system_instance.uuid)
     return analysis_system_instance
 
 
-def process_analyses(analysis_system_instance, analysis_method, sleep_time):
+def process_analyses(analysis_system_instance, analysis_method, sleep_time, delete_instance_on_exit=False, catch_exceptions=False):
     """Process all analyses which are scheduled for the analysis system instance.
 
     This function does not terminate on its own, give it a SIGINT or Ctrl+C to stop.
@@ -80,12 +92,46 @@ def process_analyses(analysis_system_instance, analysis_method, sleep_time):
     :param analysis_system_instance: The analysis system instance for which the analyses are scheduled.
     :param analysis_method: A function or method which analyses a scheduled analysis. The function must not take further arguments.
     :param sleep_time: Time to wait between polls to the MASS server
+    :param delete_instance_on_exit: If true remove the analysis_system_instance on the server before exit.
+    :param catch_exceptions: Catch all exceptions during analysis and create a failure report on the server instead of termination.
     """
-    try:
-        while True:
-            for analysis_request in analysis_system_instance.get_scheduled_analyses():
-                analysis_method(analysis_request)
-            time.sleep(sleep_time)
-    except KeyboardInterrupt:
+
+    def handle_exception(scheduled_analysis, e):
+        exc_str = ''.join(format_exception(*e))
+        exc_type = e[0].__name__
+        print_tb(e[2])
+        metadata = {
+            'exception type': exc_type
+        }
+
+        try:
+            scheduled_analysis.create_report(additional_metadata=metadata,
+                                             tags=['failed_analysis', 'exception:{}'.format(exc_type)],
+                                             raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
+                                             error_message=exc_str)
+        except Exception:
+            logging.error('Could not create a report on the server.')
+
+    def exit_analysis_process(signum, frame):
+        if delete_instance_on_exit:
+            logging.debug('Deleting AnalysisSystemInstance...')
+            analysis_system_instance.delete()
         logging.debug('Shutting down.')
-        return
+        exit(0)
+
+    signal.signal(signal.SIGINT, exit_analysis_process)
+    signal.signal(signal.SIGTERM, exit_analysis_process)
+
+    while True:
+        analyses = analysis_system_instance.get_scheduled_analyses()
+        for analysis in analyses:
+            try:
+                analysis_method(analysis)
+            except Exception:
+                if not catch_exceptions:
+                    raise
+                handle_exception(analysis, exc_info())
+
+        if not analyses:
+            time.sleep(sleep_time)
+

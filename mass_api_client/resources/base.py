@@ -3,18 +3,16 @@ from datetime import datetime
 from mass_api_client.connection_manager import ConnectionManager
 
 
-class Ref:
-    def __init__(self, key):
-        self.key = key
-
-    def resolve(self, obj):
-        return getattr(obj, self.key, None)
+class NestedResource:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
 
 
 class BaseResource:
     schema = None
     _endpoint = None
     _creation_point = None
+    _nested_fields = []
     _filter_parameters = []
     _default_filters = {}
     _connection_alias = 'default'
@@ -22,12 +20,23 @@ class BaseResource:
     def __init__(self, connection_alias, **kwargs):
         # Store current connection, in case the connection gets switched later on.
         self._connection_alias = connection_alias
+        self._update_data(**kwargs)
+
+    def _update_data(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    @classmethod
-    @property
-    def schema(cls):
-        return Ref('schema').resolve(cls)
+        # Convert dictionaries of nested fields to resources
+        for nested in self._nested_fields:
+            prev_obj = None
+            cur_obj = self
+            for attr in nested.split('.'):
+                if not hasattr(cur_obj, attr):
+                    break
+                prev_obj = cur_obj
+                cur_obj = getattr(cur_obj, attr)
+            else:
+                resource = NestedResource(**cur_obj)
+                setattr(prev_obj, nested.split('.')[-1], resource)
 
     @classmethod
     def _deserialize(cls, data, many=False):
@@ -74,7 +83,8 @@ class BaseResource:
             params = {}
 
         con = ConnectionManager().get_connection(cls._connection_alias)
-        deserialized = cls._deserialize(con.get_json(url, params=params, append_base_url=append_base_url)['results'], many=True)
+        data = con.get_json(url, params=params, append_base_url=append_base_url)['results']
+        deserialized = cls._deserialize(data, many=True)
         objects = [cls._create_instance_from_data(detail) for detail in deserialized]
 
         return objects
@@ -106,12 +116,24 @@ class BaseResource:
         return cls._get_detail_from_url('{}/{}/'.format(cls._endpoint, identifier))
 
     @classmethod
-    def items(cls):
-        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
+    def items(cls, page_size=100):
+        """
+        Get an iterator for all objects.
+
+        :return: The iterator.
+        """
+        params = dict(cls._default_filters)
+        params['per_page'] = page_size
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
 
     @classmethod
     def all(cls):
-        return cls._get_list_from_url('{}/'.format(cls._endpoint), params=cls._default_filters)
+        """
+        Download and return all objects.
+
+        :return: The list of objects.
+        """
+        return [x for x in cls.items()]
 
     @classmethod
     def query(cls, **kwargs):
@@ -122,18 +144,63 @@ class BaseResource:
         :return: The list of matching objects
         :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
         """
+        params = cls._get_query_params(**kwargs)
+        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
+
+    @classmethod
+    def count(cls, **kwargs):
+        """
+        Get the number of objects matching the query parameters.
+        The parameters are identical to those used in :func:`~mass_api_client.resources.base.query`.
+
+        :param kwargs: The query parameters. The key is the filter parameter and the value is the value to search for.
+        :return: The number of matching objects.
+        :raises: A `ValueError` if at least one of the supplied parameters is not in the list of allowed parameters.
+        """
+        con = ConnectionManager().get_connection(cls._connection_alias)
+        params = cls._get_query_params(**kwargs)
+        params['count'] = ''
+
+        return con.get_json('{}/'.format(cls._endpoint), params=params)['count']
+
+    def delete(self):
+        """
+        Deletes the object on the server.
+        The python instance will still exist and still contain data.
+
+        :return:
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        con.delete(self.url, append_base_url=False)
+
+    def save(self):
+        """
+        Saves the data of changed fields on the server.
+        Notice that some fields of the object might be immutable on the server and will be reset upon saving silently.
+
+        :return:
+        """
+        con = ConnectionManager().get_connection(self._connection_alias)
+        data = con.patch_json(self.url, append_base_url=False, data=self._to_json())
+        deserialized = self._deserialize(data, many=False)
+        self._update_data(**deserialized)
+
+    @classmethod
+    def _get_query_params(cls, **kwargs):
         params = dict(cls._default_filters)
 
         for key, value in kwargs.items():
             if key in cls._filter_parameters:
                 if isinstance(value, datetime):
                     params[key] = value.strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                elif isinstance(value, BaseResource):
+                    params[key] = value.id
                 else:
                     params[key] = value
             else:
                 raise ValueError('\'{}\' is not a filter parameter for class \'{}\''.format(key, cls.__name__))
 
-        return cls._get_iter_from_url('{}/'.format(cls._endpoint), params=params)
+        return params
 
     def _to_json(self):
         serialized, errors = self.schema.dump(self)
