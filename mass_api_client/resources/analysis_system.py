@@ -49,6 +49,7 @@ class AnalysisSystem(BaseResource):
         Process analysis requests for this analysis system.
 
         :param callback: A callable to process the analysis request.
+        The callback should take the request and sample as parameters.
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         q = con.get_json('{}request_queue/'.format(self.url), append_base_url=False)

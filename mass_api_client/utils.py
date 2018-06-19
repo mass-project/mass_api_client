@@ -41,15 +41,11 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 def get_or_create_analysis_system(identifier='', verbose_name='', tag_filter_exp='',
                                   time_schedule=None, number_retries=0, minutes_before_retry=0):
-    """Get or create an analysis system instance for the analysis system with the respective identifier.
+    """Get or create an analysis system with the respective identifier.
 
     This is a function for solving a common problem with implementations of MASS analysis clients.
-    If the analysis system instance already exists, one has either a uuid or a file with the uuid as content.
-    In this case one can retrieve the analysis system instance with the uuid.
-    
-    Otherwise one wants to create an instance for the analysis system with the given identifier.
-    If the analysis system does not yet exists, it is also created.
-    Then an analysis system instance for the analysis system is created and the uuid is saved to the uuid_file.
+    If the analysis system already exists, one can retrieve the analysis system with the identifier.
+    Otherwise one wants to create an analysis system with the given identifier.
 
     :param identifier: Get an instance for an analysis system with the given identifier as string.
     :param verbose_name: The verbose name of the respective analysis system.
