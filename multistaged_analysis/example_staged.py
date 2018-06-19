@@ -1,39 +1,35 @@
-import asyncio
-from random import randint
-from time import gmtime, strftime
+from mass_api_client import ConnectionManager
+from mass_api_client.utils import get_or_create_analysis_system
 
-from multistaged_analysis.staged_analysis import AnalysisFrame
-
-
-async def func0(sockets):
-    await asyncio.sleep(1)
-    return strftime("%Y-%m-%d %H:%M:%S", gmtime())
+from staged_analysis import AnalysisFrame, get_requests, report
 
 
-async def func1(sockets):
-    temp = await sockets.receive()
-    return temp + ' greetings from 1'
+async def example_stage_async(sockets):
+    data = await sockets.receive()
+    data.report['tags'] = ['one', 'two']
+    await sockets.send(data, 'example_stage_sync')
 
 
-async def func2(sockets):
-    temp = await sockets.receive()
-    return temp + ' greetings from 2'
-
-
-async def func3(sockets):
-    temp = await sockets.receive()
-    if randint(0, 1) == 0:
-        await sockets.send(temp, 2)
-    else:
-        print('func3: ', temp)
+def example_stage_sync(sockets):
+    data = sockets.receive()
+    data.report['json_report_objects'] = {'new_report': ('new_report', {'three': 'four'})}
+    sockets.send(data, 'report')
 
 
 if __name__ == '__main__':
+    ConnectionManager().register_connection('default',
+                                            'IjViMjgwNWVmNjEzYmM2MTViODllZWI1MSI.3tKl1aD90uoUfrhgS4Kwvka3DV4',
+                                            'http://127.0.0.1:8000/api/', timeout=60)
+    analysis_system_instance = get_or_create_analysis_system(identifier='example',
+                                                             verbose_name='Example Analysis Client',
+                                                             tag_filter_exp='sample-type:filesample',
+                                                             )
+
     frame = AnalysisFrame(
         ["tcp://127.0.0.1:5559", "tcp://127.0.0.1:5560", "tcp://127.0.0.1:5561", "tcp://127.0.0.1:5562",
          "tcp://127.0.0.1:5563", "tcp://127.0.0.1:5564", "tcp://127.0.0.1:5565", "tcp://127.0.0.1:5566"])
-    frame.add_stage(func0, 0, 1)
-    frame.add_stage(func1, 1, 1)
-    frame.add_stage(func2, 2, 2)
-    frame.add_stage(func3, 3, 2)
+    frame.add_stage(get_requests, 'requests', args=(analysis_system_instance, 'example_stage_async'))
+    frame.add_stage(example_stage_async, 'example_stage_async', concurrency='async')
+    frame.add_stage(example_stage_sync, 'example_stage_sync')
+    frame.add_stage(report, 'report', replicas=3)
     frame.start_all_stages()
