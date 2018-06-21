@@ -1,8 +1,9 @@
 from mass_api_client.schemas import AnalysisSystemSchema
-from mass_api_client.queue import AnalysisRequestListener
+from mass_api_client.queue import AnalysisRequestConsumer, QueueHandler
 from mass_api_client.connection_manager import ConnectionManager
 from .base import BaseResource
 
+from time import sleep
 
 class AnalysisSystem(BaseResource):
     schema = AnalysisSystemSchema()
@@ -53,7 +54,12 @@ class AnalysisSystem(BaseResource):
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         q = con.get_json('{}request_queue/'.format(self.url), append_base_url=False)
-        AnalysisRequestListener(q['queue'], callback, q['user'], q['password'], q['websocket']).run_forever()
+        qh = QueueHandler(q['user'], q['password'], q['websocket'])
+        consumer = AnalysisRequestConsumer(callback)
+        qh.consume(q['queue'], consumer)
+
+        while True:
+            sleep(1)
 
     def __repr__(self):
         return '[AnalysisSystem] {}'.format(self.identifier_name)

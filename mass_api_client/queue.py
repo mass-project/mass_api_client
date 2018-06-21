@@ -2,7 +2,6 @@ import json
 import stomp
 import logging
 from stomp.adapter import WebsocketConnection
-from time import sleep
 from sys import exc_info
 from traceback import format_exception, print_tb
 
@@ -10,53 +9,80 @@ from traceback import format_exception, print_tb
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-class QueueListener(stomp.ConnectionListener):
-    def __init__(self, queue, callback, user, password, url):
-        super(QueueListener, self).__init__()
-        self.callback = callback
-        self.queue_id = queue
+class QueueHandler(stomp.ConnectionListener):
+    def __init__(self, user, password, url):
         self.conn = WebsocketConnection(ws_uris=[url])
         self.conn.set_listener('', self)
         self.user = user
         self.password = password
+        self.callbacks = {}
+        self.destination_queue_ids = {}
+        self._reconnect = True
 
-    def run_forever(self):
-        # TODO: find something more elegant for this workaround
-        while True:
-            self.conn.start()
+    def _ensure_connection(self):
+        if not self.conn.is_connected():
             self.conn.connect(self.user, self.password, wait=True)
-            self.conn.subscribe(destination='/queue/{}'.format(self.queue_id), id=self.queue_id,
-                                ack='client')
+            for queue_id in self.callbacks.keys():
+                self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack='client')
 
-            while self.conn.is_connected():
-                sleep(1)
+    def consume(self, queue_id, callback):
+        """
 
+        :param queue_id: The name of the queue.
+        :param callback: The callback receives conn, headers and data and should return True to ACK the message.
+        :return:
+        """
+        destination = '/queue/{}'.format(queue_id)
+        self._ensure_connection()
+        self.callbacks[queue_id] = callback
+        self.destination_queue_ids[destination] = queue_id
+        self.conn.subscribe(destination=destination, id=queue_id, ack='client')
+
+    def send(self, queue_id, data):
+        self._ensure_connection()
+        self.conn.send(destination='/queue/{}'.format(queue_id), body=json.dumps(data))
+
+    def on_connected(self, headers, body):
+        logging.info('Queue connected. Subscribing to queues...')
+
+    def on_receiver_loop_completed(self, headers, body):
+        logging.info('Queue disconnected.')
+        if self._reconnect:
+            logging.info('Trying to reconnect...')
             self.conn.stop()
+            self._ensure_connection()
 
-
-class AnalysisRequestListener(QueueListener):
-    def __init__(self, queue, callback, user, password, url, catch_exceptions=True):
-        super(AnalysisRequestListener, self).__init__(queue, callback, user, password, url)
-        self.catch_exceptions = catch_exceptions
+    def on_error(self, headers, body):
+        self._reconnect = False
 
     def on_message(self, headers, body):
-        from mass_api_client.resources import AnalysisRequest, Sample
         data = json.loads(body)
+        queue_id = self.destination_queue_ids[headers['destination']]
+        result = self.callbacks[queue_id](self.conn, headers, data)
+
+        if result:
+            self.conn.ack(headers['message-id'], queue_id)
+        else:
+            self.conn.nack(headers['message-id'], queue_id)
+
+
+class AnalysisRequestConsumer:
+    def __init__(self, callback, catch_exceptions=True):
+        self.catch_exceptions = catch_exceptions
+        self.callback = callback
+
+    def __call__(self, conn, headers, data):
+        from mass_api_client.resources import AnalysisRequest, Sample
         request = AnalysisRequest._get_detail_from_json(data['analysis_request'])
         sample = Sample._get_detail_from_json(data['sample'])
 
         try:
-            result = self.callback(request, sample)
+            return self.callback(request, sample)
         except Exception:
             if not self.catch_exceptions:
                 raise
             self._handle_exception(request, exc_info())
-            result = True
-
-        if result:
-            self.conn.ack(headers['message-id'], self.queue_id)
-        else:
-            self.conn.nack(headers['message-id'], self.queue_id)
+            return True
 
     def _handle_exception(self, analysis_request, e):
         exc_str = ''.join(format_exception(*e))
