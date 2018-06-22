@@ -70,10 +70,16 @@ class Connection:
         json_files['metadata'] = (None, metadata)
 
         for key, value in json_files.items():
-            files[key] = (value[0], json.dumps(value[1]), 'application/json')
+            if isinstance(value, tuple):
+                files[key] = (value[0], json.dumps(value[1]), 'application/json')
+            else:
+                files[key] = (key, json.dumps(value), 'application/json')
 
         for key, value in binary_files.items():
-            files[key] = (value[0], value[1], 'binary/octet-stream')
+            if isinstance(value, tuple):
+                files[key] = (value[0], value[1], 'binary/octet-stream')
+            else:
+                files[key] = (key, value, 'binary/octet-stream')
 
         r = self._request_api(url, append_base_url, params, 'post', headers, files=files)
         if r.status_code == 204:

@@ -1,4 +1,5 @@
 import datetime
+from base64 import b64encode
 
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
@@ -59,7 +60,10 @@ class Report(BaseResource):
             serialized = cls._serialize(analysis_date=analysis_date, tags=tags,
                                         additional_metadata=additional_metadata, status=int(failed),
                                         error_message=error_message)
-            queue_handler.send(report_queue, {'report': serialized}, headers={'analysis_request': analysis_request.id})
+            raw_report_objects = {k: b64encode(v.encode()).decode() for k, v in raw_report_objects.items()}
+            queue_handler.send(report_queue, {'report': serialized, 'json_report_objects': json_report_objects,
+                                              'raw_report_objects': raw_report_objects},
+                               headers={'analysis_request': analysis_request.id})
 
         else:
             url = cls._creation_point.format(analysis_request=analysis_request.id)
