@@ -110,6 +110,15 @@ class BaseResource:
         return cls._create_instance_from_data(deserialized)
 
     @classmethod
+    def _serialize(cls, **kwargs):
+        serialized, errors = cls.schema.dump(kwargs)
+
+        if errors:
+            raise ValueError('An error occurred during object serialization: {}'.format(errors))
+
+        return serialized
+
+    @classmethod
     def get(cls, identifier):
         """
         Fetch a single object.

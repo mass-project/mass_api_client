@@ -31,7 +31,7 @@ class Report(BaseResource):
 
     @classmethod
     def create(cls, analysis_request, tags=None, json_report_objects=None, raw_report_objects=None,
-               additional_metadata=None, analysis_date=None, failed=False, error_message=None):
+               additional_metadata=None, analysis_date=None, failed=False, error_message=None, report_queue=None):
         """
         Create a new report.
 
@@ -43,7 +43,7 @@ class Report(BaseResource):
         :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
         :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
         :param analysis_date: A datetime object of the time the report was generated. Defaults to current time.
-        :return: The newly created report object
+        :return: The newly created report object, or None if the queue is used.
         """
         if tags is None:
             tags = []
@@ -54,11 +54,19 @@ class Report(BaseResource):
         if analysis_date is None:
             analysis_date = datetime.datetime.now()
 
-        url = cls._creation_point.format(analysis_request=analysis_request.id)
-        return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
-                           additional_binary_files=raw_report_objects, tags=tags,
-                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
-                           force_multipart=True)
+        if report_queue:
+            queue_handler = ConnectionManager().get_connection(cls._connection_alias).get_queue_handler()
+            serialized = cls._serialize(analysis_date=analysis_date, tags=tags,
+                                        additional_metadata=additional_metadata, status=int(failed),
+                                        error_message=error_message)
+            queue_handler.send(report_queue, {'report': serialized}, headers={'analysis_request': analysis_request.id})
+
+        else:
+            url = cls._creation_point.format(analysis_request=analysis_request.id)
+            return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
+                               additional_binary_files=raw_report_objects, tags=tags,
+                               additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
+                               force_multipart=True)
 
     @property
     def json_reports(self):

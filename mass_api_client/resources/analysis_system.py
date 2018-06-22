@@ -5,6 +5,7 @@ from .base import BaseResource
 
 from time import sleep
 
+
 class AnalysisSystem(BaseResource):
     schema = AnalysisSystemSchema()
     _endpoint = 'analysis_system'
@@ -53,10 +54,10 @@ class AnalysisSystem(BaseResource):
         The callback should take the request and sample as parameters.
         """
         con = ConnectionManager().get_connection(self._connection_alias)
-        q = con.get_json('{}request_queue/'.format(self.url), append_base_url=False)
-        qh = QueueHandler(q['user'], q['password'], q['websocket'])
-        consumer = AnalysisRequestConsumer(callback)
-        qh.consume(q['queue'], consumer)
+        request_queue_id = '{}_analysis-requests'.format(self.identifier_name)
+        report_queue_id = '{}_reports'.format(self.identifier_name)
+        consumer = AnalysisRequestConsumer(callback, report_queue=report_queue_id)
+        con.get_queue_handler().consume(request_queue_id, consumer)
 
         while True:
             sleep(1)

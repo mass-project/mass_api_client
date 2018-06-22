@@ -12,7 +12,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 class QueueHandler(stomp.ConnectionListener):
     def __init__(self, user, password, url):
         self.conn = WebsocketConnection(ws_uris=[url])
+        #self.conn = stomp.Connection11()
         self.conn.set_listener('', self)
+        #self.conn.set_listener('hearbeat', stomp.listener.HeartbeatListener)
         self.user = user
         self.password = password
         self.callbacks = {}
@@ -21,7 +23,7 @@ class QueueHandler(stomp.ConnectionListener):
 
     def _ensure_connection(self):
         if not self.conn.is_connected():
-            self.conn.connect(self.user, self.password, wait=True)
+            self.conn.connect(self.user, self.password, headers={'heart-beat': '0,10000'}, wait=True)
             for queue_id in self.callbacks.keys():
                 self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack='client')
 
@@ -38,9 +40,9 @@ class QueueHandler(stomp.ConnectionListener):
         self.destination_queue_ids[destination] = queue_id
         self.conn.subscribe(destination=destination, id=queue_id, ack='client')
 
-    def send(self, queue_id, data):
+    def send(self, queue_id, data, headers=None):
         self._ensure_connection()
-        self.conn.send(destination='/queue/{}'.format(queue_id), body=json.dumps(data))
+        self.conn.send(destination='/queue/{}'.format(queue_id), body=json.dumps(data), headers=headers)
 
     def on_connected(self, headers, body):
         logging.info('Queue connected. Subscribing to queues...')
@@ -67,9 +69,10 @@ class QueueHandler(stomp.ConnectionListener):
 
 
 class AnalysisRequestConsumer:
-    def __init__(self, callback, catch_exceptions=True):
+    def __init__(self, callback, report_queue=None, catch_exceptions=True):
         self.catch_exceptions = catch_exceptions
         self.callback = callback
+        self.report_queue = report_queue
 
     def __call__(self, conn, headers, data):
         from mass_api_client.resources import AnalysisRequest, Sample
@@ -77,7 +80,7 @@ class AnalysisRequestConsumer:
         sample = Sample._get_detail_from_json(data['sample'])
 
         try:
-            return self.callback(request, sample)
+            return self.callback(request, sample, self.report_queue)
         except Exception:
             if not self.catch_exceptions:
                 raise
@@ -96,6 +99,6 @@ class AnalysisRequestConsumer:
             analysis_request.create_report(additional_metadata=metadata,
                                            tags=['failed_analysis', 'exception:{}'.format(exc_type)],
                                            raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
-                                           error_message=exc_str)
+                                           error_message=exc_str, report_queue=self.report_queue)
         except Exception:
-            logging.error('Could not create a report on the server.')
+            logging.error('Could not create a report on the server.', exc_info())

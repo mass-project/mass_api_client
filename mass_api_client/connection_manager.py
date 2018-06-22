@@ -1,5 +1,6 @@
 import json
 from contextlib import closing
+from mass_api_client.queue import QueueHandler
 
 import requests
 
@@ -10,6 +11,7 @@ class Connection:
         self._base_url = base_url
         self._timeout = timeout
         self._session = None
+        self._queue_handler = None
         self._keep_alive = keep_alive
         self._default_headers = {'content-type': 'application/json',
                                  'Authorization': 'APIKEY {}'.format(api_key)}
@@ -77,6 +79,12 @@ class Connection:
         if r.status_code == 204:
             return dict()
         return r.json()
+
+    def get_queue_handler(self):
+        if not self._queue_handler:
+            q = self.get_json('rabbit/stomp_queue', append_base_url=True)
+            self._queue_handler = QueueHandler(q['user'], q['password'], q['websocket'])
+        return self._queue_handler
 
 
 class ConnectionManager:
