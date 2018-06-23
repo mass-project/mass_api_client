@@ -55,6 +55,9 @@ class Report(BaseResource):
         if analysis_date is None:
             analysis_date = datetime.datetime.now()
 
+        if raw_report_objects is None:
+            raw_report_objects = {}
+
         if report_queue:
             queue_handler = ConnectionManager().get_connection(cls._connection_alias).get_queue_handler()
             serialized = cls._serialize(analysis_date=analysis_date, tags=tags,
