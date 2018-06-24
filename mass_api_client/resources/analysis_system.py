@@ -55,8 +55,7 @@ class AnalysisSystem(BaseResource):
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         request_queue_id = '{}_analysis-requests'.format(self.identifier_name)
-        report_queue_id = '{}_reports'.format(self.identifier_name)
-        consumer = AnalysisRequestConsumer(callback, report_queue=report_queue_id)
+        consumer = AnalysisRequestConsumer(callback)
         con.get_queue_handler().consume(request_queue_id, consumer)
 
         while True:

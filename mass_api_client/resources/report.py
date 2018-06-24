@@ -32,7 +32,7 @@ class Report(BaseResource):
 
     @classmethod
     def create(cls, analysis_request, tags=None, json_report_objects=None, raw_report_objects=None,
-               additional_metadata=None, analysis_date=None, failed=False, error_message=None, report_queue=None):
+               additional_metadata=None, analysis_date=None, failed=False, error_message=None, report_queue=False):
         """
         Create a new report.
 
@@ -59,14 +59,15 @@ class Report(BaseResource):
             raw_report_objects = {}
 
         if report_queue:
-            queue_handler = ConnectionManager().get_connection(cls._connection_alias).get_queue_handler()
+            con = ConnectionManager().get_connection(cls._connection_alias)
+            queue_handler = con.get_queue_handler()
             serialized = cls._serialize(analysis_date=analysis_date, tags=tags,
                                         additional_metadata=additional_metadata, status=int(failed),
                                         error_message=error_message)
             raw_report_objects = {k: b64encode(v.encode()).decode() for k, v in raw_report_objects.items()}
-            queue_handler.send(report_queue, {'report': serialized, 'json_report_objects': json_report_objects,
-                                              'raw_report_objects': raw_report_objects},
-                               headers={'analysis_request': analysis_request.id})
+            queue_handler.send('reports', {'report': serialized, 'json_report_objects': json_report_objects,
+                                           'raw_report_objects': raw_report_objects},
+                               headers={'analysis_request': analysis_request.id, 'api_key': con._api_key})
 
         else:
             url = cls._creation_point.format(analysis_request=analysis_request.id)

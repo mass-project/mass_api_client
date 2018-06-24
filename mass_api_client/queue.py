@@ -69,10 +69,9 @@ class QueueHandler(stomp.ConnectionListener):
 
 
 class AnalysisRequestConsumer:
-    def __init__(self, callback, report_queue=None, catch_exceptions=True):
+    def __init__(self, callback, catch_exceptions=True):
         self.catch_exceptions = catch_exceptions
         self.callback = callback
-        self.report_queue = report_queue
 
     def __call__(self, conn, headers, data):
         from mass_api_client.resources import AnalysisRequest, Sample
@@ -80,7 +79,7 @@ class AnalysisRequestConsumer:
         sample = Sample._get_detail_from_json(data['sample'])
 
         try:
-            return self.callback(request, sample, self.report_queue)
+            return self.callback(request, sample)
         except Exception:
             if not self.catch_exceptions:
                 raise
@@ -99,6 +98,6 @@ class AnalysisRequestConsumer:
             analysis_request.create_report(additional_metadata=metadata,
                                            tags=['failed_analysis', 'exception:{}'.format(exc_type)],
                                            raw_report_objects={'traceback': exc_str}, failed=True,
-                                           error_message=exc_str, report_queue=self.report_queue)
+                                           error_message=exc_str, report_queue=True)
         except Exception:
             logging.error('Could not create a report on the server.', exc_info())
