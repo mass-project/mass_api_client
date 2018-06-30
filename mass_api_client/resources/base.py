@@ -96,7 +96,7 @@ class BaseResource:
         return objects
 
     @classmethod
-    def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, use_queue=False, parameters=None, **kwargs):
+    def _create(cls, additional_json_files=None, additional_binary_files=None, force_multipart=False, use_queue=False, parameters=None, **kwargs):
         if use_queue:
             return cls._create_on_queue(additional_json_files=additional_json_files,
                                         additional_binary_files=additional_binary_files, parameters=parameters, **kwargs)
