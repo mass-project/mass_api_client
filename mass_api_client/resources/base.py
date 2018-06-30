@@ -1,4 +1,5 @@
 from datetime import datetime
+from base64 import b64encode
 
 from mass_api_client.connection_manager import ConnectionManager
 
@@ -12,6 +13,7 @@ class BaseResource:
     schema = None
     _endpoint = None
     _creation_point = None
+    _creation_queue = None
     _nested_fields = []
     _filter_parameters = []
     _default_filters = {}
@@ -94,11 +96,15 @@ class BaseResource:
         return objects
 
     @classmethod
-    def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, **kwargs):
+    def _create(cls, additional_json_files=None, additional_binary_files=None, url=None, force_multipart=False, use_queue=False, parameters=None, **kwargs):
+        if use_queue:
+            return cls._create_on_queue(additional_json_files=additional_json_files,
+                                        additional_binary_files=additional_binary_files, parameters=parameters, **kwargs)
+
         con = ConnectionManager().get_connection(cls._connection_alias)
-        if not url:
-            url = '{}/'.format(cls._creation_point)
-        serialized, errors = cls.schema.dump(kwargs)
+        creation_point = cls._creation_point.format(**parameters) if parameters else cls._creation_point
+        url = '{}/'.format(creation_point)
+        serialized = cls._serialize(**kwargs)
 
         if additional_binary_files or additional_json_files or force_multipart:
             response_data = con.post_multipart(url, serialized, json_files=additional_json_files, binary_files=additional_binary_files)
@@ -108,6 +114,27 @@ class BaseResource:
         deserialized = cls._deserialize(response_data)
 
         return cls._create_instance_from_data(deserialized)
+
+    @classmethod
+    def _create_on_queue(cls, additional_json_files=None, additional_binary_files=None, parameters=None, **kwargs):
+        if cls._creation_queue is None:
+            raise ValueError('Objects of {} can not be created on the queue.'.format(cls.__class__.__name__))
+
+        con = ConnectionManager().get_connection(cls._connection_alias)
+        queue_handler = con.get_queue_handler()
+
+        headers = {'api_key': con._api_key}
+        if parameters:
+            headers.update(parameters)
+
+        serialized = cls._serialize(**kwargs)
+        encoded_binary_files = {k: b64encode(v.encode()).decode() for k, v in additional_binary_files.items()}
+
+        queue_handler.send(cls._creation_queue, {
+            'data': serialized,
+            'additional_json_files': additional_json_files,
+            'additional_binary_files': encoded_binary_files},
+            headers=headers)
 
     @classmethod
     def _serialize(cls, **kwargs):

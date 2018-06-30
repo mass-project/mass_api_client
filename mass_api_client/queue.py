@@ -1,7 +1,7 @@
 import json
 import stomp
 import logging
-from stomp.adapter import WebsocketConnection
+from stomp.adapter.websocket import WebsocketConnection
 from sys import exc_info
 from traceback import format_exception, print_tb
 

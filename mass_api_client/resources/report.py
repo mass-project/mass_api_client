@@ -1,5 +1,4 @@
 import datetime
-from base64 import b64encode
 
 from mass_api_client.connection_manager import ConnectionManager
 from mass_api_client.schemas import ReportSchema
@@ -15,7 +14,8 @@ class Report(BaseResource):
 
     schema = ReportSchema()
     _endpoint = 'report'
-    _creation_point = 'analysis_request/{analysis_request}/submit_report/'
+    _creation_point = 'analysis_request/{analysis_request}/submit_report'
+    _creation_queue = 'reports'
 
     _filter_parameters = ['analysis_date__gte', 'analysis_date__lte', 'analysis_system', 'error_message__contains',
                           'sample', 'status', 'tags__all', 'upload_date__gte', 'upload_date__lte']
@@ -58,23 +58,10 @@ class Report(BaseResource):
         if raw_report_objects is None:
             raw_report_objects = {}
 
-        if report_queue:
-            con = ConnectionManager().get_connection(cls._connection_alias)
-            queue_handler = con.get_queue_handler()
-            serialized = cls._serialize(analysis_date=analysis_date, tags=tags,
-                                        additional_metadata=additional_metadata, status=int(failed),
-                                        error_message=error_message)
-            raw_report_objects = {k: b64encode(v.encode()).decode() for k, v in raw_report_objects.items()}
-            queue_handler.send('reports', {'report': serialized, 'json_report_objects': json_report_objects,
-                                           'raw_report_objects': raw_report_objects},
-                               headers={'analysis_request': analysis_request.id, 'api_key': con._api_key})
-
-        else:
-            url = cls._creation_point.format(analysis_request=analysis_request.id)
-            return cls._create(url=url, analysis_date=analysis_date, additional_json_files=json_report_objects,
-                               additional_binary_files=raw_report_objects, tags=tags,
-                               additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
-                               force_multipart=True)
+        return cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
+                           additional_binary_files=raw_report_objects, tags=tags,
+                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
+                           force_multipart=True, use_queue=report_queue, parameters={'analysis_request': analysis_request.id})
 
     @property
     def json_reports(self):
