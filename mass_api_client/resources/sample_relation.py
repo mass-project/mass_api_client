@@ -8,17 +8,18 @@ class SampleRelation(BaseResource):
     schema = SampleRelationSchema()
     _endpoint = 'sample_relation'
     _creation_point = _endpoint
+    _creation_queue = 'sample_relations'
     _class_identifier = 'SampleRelation'
 
     @classmethod
-    def create(cls, sample, other, relation_type, additional_metadata=None):
+    def create(cls, sample, other, relation_type, additional_metadata=None, use_queue=False):
         if not isinstance(sample, Sample) or not isinstance(other, Sample):
             raise ValueError('"sample" and "other" must be an instance of Sample')
 
         if additional_metadata is None:
             additional_metadata = {}
 
-        return cls._create(sample=sample.url, other=other.url, relation_type=relation_type.url, additional_metadata=additional_metadata)
+        return cls._create(sample=sample.url, other=other.url, relation_type=relation_type.url, additional_metadata=additional_metadata, use_queue=use_queue)
 
     def __repr__(self):
         return '[{}] {}'.format(str(self.__class__.__name__), str(self.id))

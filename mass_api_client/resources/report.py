@@ -32,7 +32,7 @@ class Report(BaseResource):
 
     @classmethod
     def create(cls, analysis_request, tags=None, json_report_objects=None, raw_report_objects=None,
-               additional_metadata=None, analysis_date=None, failed=False, error_message=None, report_queue=False):
+               additional_metadata=None, analysis_date=None, failed=False, error_message=None, use_queue=False):
         """
         Create a new report.
 
@@ -61,7 +61,7 @@ class Report(BaseResource):
         return cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
-                           force_multipart=True, use_queue=report_queue, parameters={'analysis_request': analysis_request.id})
+                           force_multipart=True, use_queue=use_queue, parameters={'analysis_request': analysis_request.id})
 
     @property
     def json_reports(self):

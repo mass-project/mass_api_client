@@ -50,7 +50,7 @@ class AnalysisRequest(BaseResource):
         """
         return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects,
                              additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date,
-                             failed=failed, error_message=error_message, report_queue=report_queue)
+                             failed=failed, error_message=error_message, use_queue=report_queue)
 
     def get_analysis_system(self):
         """

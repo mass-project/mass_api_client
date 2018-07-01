@@ -128,7 +128,7 @@ class BaseResource:
             headers.update(parameters)
 
         serialized = cls._serialize(**kwargs)
-        encoded_binary_files = {k: b64encode(v.encode()).decode() for k, v in additional_binary_files.items()}
+        encoded_binary_files = {k: b64encode(v.encode()).decode() for k, v in additional_binary_files.items()} if additional_binary_files else None
 
         queue_handler.send(cls._creation_queue, {
             'data': serialized,
