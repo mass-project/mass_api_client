@@ -37,7 +37,7 @@ class AnalysisRequest(BaseResource):
                            priority=priority, parameters=parameters)
 
     def create_report(self, additional_metadata=None, json_report_objects=None, raw_report_objects=None, tags=None,
-                      analysis_date=None, failed=False, error_message=None, report_queue=False):
+                      analysis_date=None, failed=False, error_message=None, use_queue=False):
         """
         Create a :class:`.Report` and remove the :class:`ScheduledAnalysis` from the server.
 
@@ -50,7 +50,7 @@ class AnalysisRequest(BaseResource):
         """
         return Report.create(self, json_report_objects=json_report_objects, raw_report_objects=raw_report_objects,
                              additional_metadata=additional_metadata, tags=tags, analysis_date=analysis_date,
-                             failed=failed, error_message=error_message, use_queue=report_queue)
+                             failed=failed, error_message=error_message, use_queue=use_queue)
 
     def get_analysis_system(self):
         """
