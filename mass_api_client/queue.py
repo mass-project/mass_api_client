@@ -98,6 +98,6 @@ class AnalysisRequestConsumer:
             analysis_request.create_report(additional_metadata=metadata,
                                            tags=['failed_analysis', 'exception:{}'.format(exc_type)],
                                            raw_report_objects={'traceback': exc_str}, failed=True,
-                                           error_message=exc_str, report_queue=True)
+                                           error_message=exc_str, use_queue=True)
         except Exception:
             logging.error('Could not create a report on the server.', exc_info())
