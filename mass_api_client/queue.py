@@ -1,10 +1,10 @@
 import json
-import stomp
 import logging
-from stomp.adapter.websocket import WebsocketConnection
 from sys import exc_info
 from traceback import format_exception, print_tb
 
+import stomp
+from stomp.adapter.websocket import WebsocketConnection
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -98,6 +98,6 @@ class AnalysisRequestConsumer:
             analysis_request.create_report(additional_metadata=metadata,
                                            tags=['failed_analysis', 'exception:{}'.format(exc_type)],
                                            raw_report_objects={'traceback': exc_str}, failed=True,
-                                           error_message=exc_str, report_queue=True)
+                                           error_message=exc_str, use_queue=True)
         except Exception:
             logging.error('Could not create a report on the server.', exc_info())
