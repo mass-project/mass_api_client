@@ -4,6 +4,8 @@ import pickle
 import sys
 import traceback
 import zlib
+import random
+import string
 from multiprocessing import Process
 
 import zmq.asyncio
