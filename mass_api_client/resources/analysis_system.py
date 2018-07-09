@@ -1,5 +1,5 @@
 from mass_api_client.schemas import AnalysisSystemSchema
-from mass_api_client.queue import AnalysisRequestConsumer, QueueHandler
+from mass_api_client.queue import AnalysisRequestConsumer
 from mass_api_client.connection_manager import ConnectionManager
 from .base import BaseResource
 
