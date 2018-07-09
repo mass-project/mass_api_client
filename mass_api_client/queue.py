@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import uuid4
 from sys import exc_info
 from traceback import format_exception, print_tb
 
@@ -10,13 +11,13 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class QueueHandler(stomp.ConnectionListener):
-    def __init__(self, user, password, url):
+    def __init__(self, api_key, url):
         self.conn = WebsocketConnection(ws_uris=[url])
         #self.conn = stomp.Connection11()
         self.conn.set_listener('', self)
         #self.conn.set_listener('hearbeat', stomp.listener.HeartbeatListener)
-        self.user = user
-        self.password = password
+        self.user = str(uuid4())
+        self.password = api_key
         self.callbacks = {}
         self.destination_queue_ids = {}
         self._reconnect = True
