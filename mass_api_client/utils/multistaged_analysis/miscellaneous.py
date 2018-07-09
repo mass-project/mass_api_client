@@ -75,7 +75,7 @@ def report(sockets):
 
 
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60):
-    async def fetch(url, text, cookies, headers):
+    async def fetch(url, text, cookies, headers, status, redirects):
         async with sem:
             async with session.get(url, allow_redirects=True) as response:
                 raw_data = {}
@@ -86,12 +86,17 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     raw_data['headers'] = dict(response.headers)
                 if cookies:
                     raw_data['cookies'] = response.cookies
+                if status:
+                    raw_data['status'] = response.status
+                if redirects:
+                    raw_data['redirects'] = len(response.history)
+                raw_data['url'] = url
                 return raw_data
 
-    async def req(urls, text, cookies, headers):
+    async def req(urls, text, cookies, headers, status, redirects):
         tasks = []
         for url in urls:
-            tasks.append(asyncio.ensure_future(fetch(url, text, cookies, headers), loop=sockets.loop))
+            tasks.append(asyncio.ensure_future(fetch(url, text, cookies, headers, status, redirects), loop=sockets.loop))
         return await asyncio.gather(*tasks)
 
     async def run():
@@ -101,9 +106,11 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
             text = data.get_instruction(sockets, 'text')
             cookies = data.get_instruction(sockets, 'cookies')
             headers = data.get_instruction(sockets, 'headers')
+            status = data.get_instruction(sockets, 'status')
+            redirects = data.get_instruction(sockets, 'redirects')
 
             try:
-                future = await asyncio.ensure_future(req(urls, text, cookies, headers), loop=sockets.loop)
+                future = await asyncio.ensure_future(req(urls, text, cookies, headers, status, redirects), loop=sockets.loop)
 
             except Exception as e:
                 await error_handler(e, data, sockets)

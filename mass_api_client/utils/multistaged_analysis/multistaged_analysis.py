@@ -192,9 +192,10 @@ class AnalysisFrame:
         :param addresses: A list of Addresses for the ZeroMQ Queues. The length of the list should be even.
         Each stage needs two addresses.
         """
-        self.ipc_path = ipc_path
-        if not os.path.exists(ipc_path):
-            os.makedirs(ipc_path)
+        self.ipc_path = ipc_path + (''.join(random.choice(string.ascii_letters) for m in range(16))) + '/'
+        while os.path.exists(self.ipc_path):
+            self.ipc_path = ipc_path + (''.join(random.choice(string.ascii_letters) for m in range(16))) + '/'
+        os.makedirs(self.ipc_path)
         self.ipc_name = 0
         self.loop = asyncio.get_event_loop()
         self.async_context = zmq.asyncio.Context()
