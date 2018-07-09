@@ -293,8 +293,7 @@ class StageObject:
     def make_stage_report(self, sockets, stage_report):
         self.stage_report[sockets.name] = stage_report
 
-    # todo: refactor reports
-    def make_json_report(self, sockets, report, report_name=None, subpress_stage_name=False):
+    def report_json(self, sockets, report, report_name=None, subpress_stage_name=False):
         if not self.report['json_report_objects']:
             self.report['json_report_objects'] = {}
         if not subpress_stage_name:
@@ -309,14 +308,26 @@ class StageObject:
             for key in report:
                 self.report['json_report_objects'][key] = report[key]
 
-    def make_tag_report(self, tag_list):
+    def report_tag(self, tag_list):
         if not self.report['tags']:
             self.report['tags'] = []
         for tag in tag_list:
             self.report['tags'].append(tag)
 
-    def failed_true(self):
-        self.report['failed'] = True
+    def report_failed(self, failed):
+        self.report['failed'] = failed
+
+    def report_raw_report_object(self, raw_report_objects):
+        self.report['raw_report_objects'] = raw_report_objects
+
+    def report_additional_metadata(self, additional_metadata):
+        self.report['additional_metadata'] = additional_metadata
+
+    def report_analysis_data(self, analysis_date):
+        self.report['analysis_date'] = analysis_date
+
+    def report_error_message(self, error_message):
+        self.report['error_message'] = error_message
 
 
 class RequestObject(StageObject):

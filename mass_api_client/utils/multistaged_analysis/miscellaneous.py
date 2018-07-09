@@ -70,7 +70,8 @@ def report(sockets):
                                tags=data.report['tags'],
                                analysis_date=data.report['analysis_date'],
                                failed=data.report['failed'],
-                               error_message=data.report['error_message'])
+                               error_message=data.report['error_message'],
+                               use_queue=True)
 
 
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60):
