@@ -10,7 +10,7 @@ from .multistaged_analysis import RequestObject
 def error_handling_sync(e, data, sockets):
     data.report['failed'] = True
     data.report['error_message'] = str(e) + traceback.format_exc()
-    data.make_tag_report(['failed'])
+    data.report_tag(['failed'])
     sockets.send(data, 'report')
     print(traceback.format_exc())
 
@@ -18,7 +18,7 @@ def error_handling_sync(e, data, sockets):
 async def error_handling_async(e, data, sockets):
     data.report['failed'] = True
     data.report['error_message'] = str(e) + traceback.format_exc()
-    data.make_tag_report(['failed'])
+    data.report_tag(['failed'])
     await sockets.send(data, 'report')
     print(traceback.format_exc())
 
