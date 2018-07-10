@@ -1,6 +1,7 @@
 import asyncio
 import time
 import traceback
+
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 
 from mass_api_client.resources import *
@@ -74,31 +75,54 @@ def report(sockets):
                                use_queue=True)
 
 
+def _decode(byte_body, headers):
+    ct = None
+    if 'Content-Type' in headers:
+        ct = 'Content-Type'
+    elif 'content-type' in headers:
+        ct = 'content-type'
+    if ct:
+        if 'iso-8859-1' in headers[ct].lower():
+            return byte_body.decode('iso-8859-1', 'ignore')
+        if 'iso-8859-2' in headers[ct].lower():
+            return byte_body.decode('iso-8859-2', 'ignore')
+        else:
+            return byte_body.decode('utf-8', 'ignore')
+    else:
+        return byte_body.decode('utf-8', 'ignore')
+
+
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
                    stream_timeout=300):
     async def fetch(url, args):
         async with sem:
-            async with session.get(url, allow_redirects=True) as response:
-                raw_data = {}
-                if args['text']:
-                    if args['stream']:
-                        start_time, raw_data['text'] = time.time(), ''
-                        async for data in response.content.iter_chunked(1024):
-                            if time.time() - start_time > stream_timeout:
-                                raise ValueError('Timeout reached. Downloading the contents took too long.')
-                            raw_data['text'] += str(data)
-                    else:
-                        text = await response.read()
-                        raw_data['text'] = text
-                if args['headers']:
-                    raw_data['headers'] = dict(response.headers)
-                if args['cookies']:
-                    raw_data['cookies'] = response.cookies
-                if args['status']:
-                    raw_data['status'] = response.status
-                if args['redirects']:
-                    raw_data['redirects'] = len(response.history)
-                raw_data['url'] = url
+            try:
+                async with session.get(url, allow_redirects=True) as response:
+                    raw_data = {}
+                    if args['text']:
+                        if args['stream']:
+                            start_time, byte_body = time.time(), b''
+                            async for data in response.content.iter_chunked(1024):
+                                if time.time() - start_time > stream_timeout:
+                                    raise ValueError('Timeout reached. Downloading the contents took too long.')
+                                byte_body += data
+                            raw_data['text'] = _decode(byte_body, dict(response.headers))
+                        else:
+                            byte_body = await response.read()
+                            raw_data['text'] = _decode(byte_body, dict(response.headers))
+                    if args['headers']:
+                        raw_data['headers'] = dict(response.headers)
+                    if args['cookies']:
+                        raw_data['cookies'] = response.cookies
+                    if args['status']:
+                        raw_data['status'] = response.status
+                    if args['redirects']:
+                        raw_data['redirects'] = len(response.history)
+                    raw_data['url'] = url
+                    raw_data['error'] = False
+                    return raw_data
+            except Exception as e:
+                raw_data = {'error': str(e) + str(traceback)}
                 return raw_data
 
     async def req(args):
