@@ -1,6 +1,6 @@
 import asyncio
-import time
 import traceback
+
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 
 from mass_api_client.resources import *
@@ -74,22 +74,20 @@ def report(sockets):
                                use_queue=True)
 
 
-async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
-                   stream_timeout=300):
+async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60, stream_timeout=300):
     async def fetch(url, args):
         async with sem:
             async with session.get(url, allow_redirects=True) as response:
                 raw_data = {}
+                """if text:
+                    text = await response.read()
+                    raw_data['text'] = text"""
                 if args['text']:
-                    if args['stream']:
-                        start_time, raw_data['text'] = time.time(), ''
-                        async for data in response.content.iter_chunked(1024):
-                            if time.time() - start_time > stream_timeout:
-                                raise ValueError('Timeout reached. Downloading the contents took too long.')
-                            raw_data['text'] += str(data)
-                    else:
-                        text = await response.read()
-                        raw_data['text'] = text
+                    start_time, raw_data['text'] = time.time(), ''
+                    async for data in response.content.iter_chunked(1024):
+                        if time.time() - start_time > stream_timeout:
+                            raise ValueError('Timeout reached. Downloading the contents took too long.')
+                        raw_data['text'] += str(data)
                 if args['headers']:
                     raw_data['headers'] = dict(response.headers)
                 if args['cookies']:
@@ -111,14 +109,14 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
     async def run():
         while True:
             data = await sockets.receive()
-            args = {'urls': data.get_instruction(sockets, 'url_list'),
-                    'text': data.get_instruction(sockets, 'text'),
-                    'cookies': data.get_instruction(sockets, 'cookies'),
-                    'headers': data.get_instruction(sockets, 'headers'),
-                    'status': data.get_instruction(sockets, 'status'),
-                    'redirects': data.get_instruction(sockets, 'redirects'),
-                    'client_headers': data.get_instruction(sockets, 'client_headers'),
-                    'stream': data.get_instruction(sockets, 'stream')}
+            args = {}
+            args['urls'] = data.get_instruction(sockets, 'url_list')
+            args['text'] = data.get_instruction(sockets, 'text')
+            args['cookies'] = data.get_instruction(sockets, 'cookies')
+            args['headers'] = data.get_instruction(sockets, 'headers')
+            args['status'] = data.get_instruction(sockets, 'status')
+            args['redirects'] = data.get_instruction(sockets, 'redirects')
+            args['client_headers'] = data.get_instruction(sockets, 'redirects')
 
             try:
                 future = await asyncio.ensure_future(req(args), loop=sockets.loop)
