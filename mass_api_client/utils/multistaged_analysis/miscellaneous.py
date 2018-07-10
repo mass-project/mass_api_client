@@ -74,43 +74,52 @@ def report(sockets):
                                use_queue=True)
 
 
-async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60):
-    async def fetch(url, text, cookies, headers, status, redirects):
+async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60, stream_timeout=300):
+    async def fetch(url, args):
         async with sem:
             async with session.get(url, allow_redirects=True) as response:
                 raw_data = {}
-                if text:
+                """if text:
                     text = await response.read()
-                    raw_data['text'] = text
-                if headers:
+                    raw_data['text'] = text"""
+                if args['text']:
+                    start_time, raw_data['text'] = time.time(), ''
+                    async for data in response.content.iter_chunked(1024):
+                        if time.time() - start_time > stream_timeout:
+                            raise ValueError('Timeout reached. Downloading the contents took too long.')
+                            raw_data['text'] += str(data)
+                if args['headers']:
                     raw_data['headers'] = dict(response.headers)
-                if cookies:
+                if args['cookies']:
                     raw_data['cookies'] = response.cookies
-                if status:
+                if args['status']:
                     raw_data['status'] = response.status
-                if redirects:
+                if args['redirects']:
                     raw_data['redirects'] = len(response.history)
                 raw_data['url'] = url
                 return raw_data
 
-    async def req(urls, text, cookies, headers, status, redirects):
+    async def req(args):
         tasks = []
+        urls = args.pop('urls')
         for url in urls:
-            tasks.append(asyncio.ensure_future(fetch(url, text, cookies, headers, status, redirects), loop=sockets.loop))
+            tasks.append(asyncio.ensure_future(fetch(url, args), loop=sockets.loop))
         return await asyncio.gather(*tasks)
 
     async def run():
         while True:
             data = await sockets.receive()
-            urls = data.get_instruction(sockets, 'url_list')
-            text = data.get_instruction(sockets, 'text')
-            cookies = data.get_instruction(sockets, 'cookies')
-            headers = data.get_instruction(sockets, 'headers')
-            status = data.get_instruction(sockets, 'status')
-            redirects = data.get_instruction(sockets, 'redirects')
+            args = {}
+            args['urls'] = data.get_instruction(sockets, 'url_list')
+            args['text'] = data.get_instruction(sockets, 'text')
+            args['cookies'] = data.get_instruction(sockets, 'cookies')
+            args['headers'] = data.get_instruction(sockets, 'headers')
+            args['status'] = data.get_instruction(sockets, 'status')
+            args['redirects'] = data.get_instruction(sockets, 'redirects')
+            args['client_headers'] = data.get_instruction(sockets, 'redirects')
 
             try:
-                future = await asyncio.ensure_future(req(urls, text, cookies, headers, status, redirects), loop=sockets.loop)
+                future = await asyncio.ensure_future(req(args), loop=sockets.loop)
 
             except Exception as e:
                 await error_handler(e, data, sockets)
