@@ -87,7 +87,7 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     async for data in response.content.iter_chunked(1024):
                         if time.time() - start_time > stream_timeout:
                             raise ValueError('Timeout reached. Downloading the contents took too long.')
-                            raw_data['text'] += str(data)
+                        raw_data['text'] += str(data)
                 if args['headers']:
                     raw_data['headers'] = dict(response.headers)
                 if args['cookies']:
