@@ -308,8 +308,11 @@ class StageObject:
                 for key in report:
                     self.report['json_report_objects'][sockets.name][key] = report[key]
         else:
-            for key in report:
-                self.report['json_report_objects'][key] = report[key]
+            if report_name:
+                self.report['json_report_objects'][report_name] = report
+            else:
+                for key in report:
+                    self.report['json_report_objects'][key] = report[key]
 
     def report_tag(self, tag_list):
         if not self.report['tags']:
