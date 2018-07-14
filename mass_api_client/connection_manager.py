@@ -88,7 +88,7 @@ class Connection:
 
     def get_queue_handler(self):
         if not self._queue_handler:
-            q = self.get_json('rabbit/stomp_queue', append_base_url=True)
+            q = self.get_json('rabbit/stomp_queue/', append_base_url=True)
             self._queue_handler = QueueHandler(self._api_key, q['websocket'])
         return self._queue_handler
 
