@@ -5,7 +5,7 @@ from sys import exc_info
 from traceback import format_exception, print_tb
 
 import stomp
-from stomp.adapter.websocket import WebsocketConnection
+from stomp.adapter.webstomp import WebsocketConnection
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
