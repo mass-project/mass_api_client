@@ -13,6 +13,7 @@ class Sample(BaseResource):
     schema = SampleSchema()
     _endpoint = 'sample'
     _creation_point = _endpoint
+    _creation_queue = 'samples'
     _nested_fields = ['unique_features', 'unique_features.file']
 
     _filter_parameters = ['custom_unique_feature', 'domain', 'domain_contains', 'domain_endswith', 'domain_startswith',
@@ -108,7 +109,7 @@ class Sample(BaseResource):
 
     @classmethod
     def create(cls, uri=None, domain=None, port=None, ipv4=None, ipv6=None, filename=None, file=None, tlp_level=0,
-               tags=None):
+               tags=None, use_queue=False):
         """
         Create a new :class:`Sample` on the server.
 
@@ -138,8 +139,8 @@ class Sample(BaseResource):
             tags = []
         if file and filename:
             return cls._create(additional_binary_files={'file': (filename, file)}, tlp_level=tlp_level, tags=tags,
-                               unique_features=unique_features)
+                               unique_features=unique_features, use_queue=use_queue)
         elif bool(file) != bool(filename):
             raise ValueError('Either file or filename is set, but not both.')
         else:
-            return cls._create(tlp_level=tlp_level, tags=tags, unique_features=unique_features)
+            return cls._create(tlp_level=tlp_level, tags=tags, unique_features=unique_features, use_queue=use_queue)
