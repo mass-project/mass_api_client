@@ -64,7 +64,6 @@ def report(sockets):
 
     """
     data = sockets.receive()
-    print('report_stage', flush=True)
     data.request.create_report(json_report_objects=data.report['json_report_objects'],
                                raw_report_objects=data.report['raw_report_objects'],
                                additional_metadata=data.report['additional_metadata'],
