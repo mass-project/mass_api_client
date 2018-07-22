@@ -61,7 +61,39 @@ class Report(BaseResource):
         return cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
                            additional_binary_files=raw_report_objects, tags=tags,
                            additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
-                           force_multipart=True, use_queue=use_queue, parameters={'analysis_request': analysis_request.id})
+                           force_multipart=True, use_queue=use_queue,
+                           parameters={'analysis_request': analysis_request.id})
+
+    @classmethod
+    def create_without_request(cls, sample, analysis_system, tags=None, json_report_objects=None, raw_report_objects=None,
+                               additional_metadata=None, analysis_date=None, failed=False, error_message=None):
+        """
+        Create a new report on the queue
+
+        :param sample: The :class:`.Sample` this report was created for
+        :param tags: A list of strings
+        :param json_report_objects: A dictionary of JSON reports, where the key is the object name.
+        :param raw_report_objects: A dictionary of binary file reports, where the key is the file name.
+        :param analysis_date: A datetime object of the time the report was generated. Defaults to current time.
+        :return: The newly created report object, or None if the queue is used.
+        """
+        if tags is None:
+            tags = []
+
+        if additional_metadata is None:
+            additional_metadata = {}
+
+        if analysis_date is None:
+            analysis_date = datetime.datetime.now()
+
+        if raw_report_objects is None:
+            raw_report_objects = {}
+
+        return cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
+                           additional_binary_files=raw_report_objects, tags=tags,
+                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
+                           force_multipart=True, use_queue=True,
+                           parameters={'sample': sample.id, 'analysis_system': analysis_system.identifier_name})
 
     @property
     def json_reports(self):
