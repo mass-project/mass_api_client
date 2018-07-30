@@ -135,7 +135,6 @@ class SyncAnalysisModule:
         self.next_stage = next_stage
 
     def _bootstrap_stage(self, args):
-        print('syncstage', self.name, os.getpid())
         sockets = SyncSockets(self.context, self.address_dict, self.name, self.next_stage)
         while True:
             try:
@@ -158,7 +157,6 @@ class Streamer:
         self.queue_size = queue_size
 
     def _streamer_process(self):
-        print('streamer', os.getpid(), self.frontend_address)
         context = zmq.Context(1)
 
         socket_pull = context.socket(zmq.PULL)
@@ -246,7 +244,6 @@ class AnalysisFrame:
         """
         self.start_streamer_workers()
         async_shared_sockets = AsyncSharedOutSockets(self.async_context, self.address_dict)
-        print(self.address_dict)
         coros = []
         processes = []
         for stage in self.stages:
