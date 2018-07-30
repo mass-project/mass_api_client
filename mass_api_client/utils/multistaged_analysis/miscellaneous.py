@@ -24,20 +24,18 @@ async def error_handling_async(e, data, sockets):
     print(traceback.format_exc())
 
 
-def create_sample_and_report(sockets, analysis_sys):
+def create_sample_and_report(sockets, analysis_system):
     data = sockets.receive()
-
     s = Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
-                      ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_file,
+                      ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
                       tlp_level=data.sample_tlp_level, tags=data.sample_tags)
-    request = analysis_sys.create_request(s)
-    request.create_report(json_report_objects=data.report['json_report_objects'],
-                          raw_report_objects=data.report['raw_report_objects'],
-                          additional_metadata=data.report['additional_metadata'],
-                          tags=data.report['tags'],
-                          analysis_date=data.report['analysis_date'],
-                          failed=data.report['failed'],
-                          error_message=data.report['error_message'])
+    Report.create_without_request(s, analysis_system, tags=data.report['tags'],
+                                  json_report_objects=data.report['json_report_objects'],
+                                  raw_report_objects=data.report['raw_report_objects'],
+                                  additional_metadata=data.report['additional_metadata'],
+                                  analysis_date=data.report['analysis_date'],
+                                  failed=data.report['failed'],
+                                  error_message=data.report['error_message'])
 
 
 def get_requests(sockets, analysis_sys):
