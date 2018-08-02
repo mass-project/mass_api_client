@@ -108,7 +108,15 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                             byte_body = await response.read()
                             raw_data['text'] = _decode(byte_body, dict(response.headers))
                     if args['headers']:
-                        raw_data['headers'] = dict(response.headers)
+                        headers = response.headers
+                        raw_data['headers'] = {}
+                        for head in iter(headers):
+                            if head not in raw_data['headers']:
+                                raw_data['headers'][head] = headers[head]
+                            elif isinstance(raw_data['headers'][head], str):
+                                raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
+                            else:
+                                raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
                     if args['cookies']:
                         raw_data['cookies'] = response.cookies
                     if args['status']:
