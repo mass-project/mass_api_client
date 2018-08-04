@@ -94,6 +94,8 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
     async def fetch(url, args):
         async with sem:
             try:
+                if args['client_headers']:
+                    session.post(url, headers=args['client_headers'])
                 async with session.get(url, allow_redirects=True) as response:
                     raw_data = {}
                     if args['text']:
