@@ -3,12 +3,12 @@ import time
 import traceback
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
-
 from mass_api_client.resources import *
+
 from .multistaged_analysis import RequestObject
 
 
-def error_handling_sync(e, data, sockets):
+def error_handling_sync_debug(e, data, sockets):
     data.report['failed'] = True
     data.report['error_message'] = str(e) + traceback.format_exc()
     data.report_tag(['failed'])
@@ -16,12 +16,26 @@ def error_handling_sync(e, data, sockets):
     print(traceback.format_exc())
 
 
-async def error_handling_async(e, data, sockets):
+async def error_handling_async_debug(e, data, sockets):
     data.report['failed'] = True
     data.report['error_message'] = str(e) + traceback.format_exc()
     data.report_tag(['failed'])
     await sockets.send(data, 'report')
     print(traceback.format_exc())
+
+
+def error_handling_sync(e, data, sockets):
+    data.report['failed'] = True
+    data.report['error_message'] = str(e) + traceback.format_exc()
+    data.report_tag(['failed'])
+    sockets.send(data, 'report')
+
+
+async def error_handling_async(e, data, sockets):
+    data.report['failed'] = True
+    data.report['error_message'] = str(e) + traceback.format_exc()
+    data.report_tag(['failed'])
+    await sockets.send(data, 'report')
 
 
 def create_sample_and_report(sockets, analysis_system):
@@ -93,43 +107,39 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                    stream_timeout=300):
     async def fetch(url, args):
         async with sem:
-            try:
-                if args['client_headers']:
-                    session.post(url, headers=args['client_headers'])
-                async with session.get(url, allow_redirects=True) as response:
-                    raw_data = {}
-                    if args['text']:
-                        if args['stream']:
-                            start_time, byte_body = time.time(), b''
-                            async for data in response.content.iter_chunked(1024):
-                                if time.time() - start_time > stream_timeout:
-                                    raise ValueError('Timeout reached. Downloading the contents took too long.')
-                                byte_body += data
-                            raw_data['text'] = _decode(byte_body, dict(response.headers))
+            if args['client_headers']:
+                await session.post(url, headers=args['client_headers'])
+            async with session.get(url, allow_redirects=True) as response:
+                raw_data = {}
+                if args['text']:
+                    if args['stream']:
+                        start_time, byte_body = time.time(), b''
+                        async for data in response.content.iter_chunked(1024):
+                            if time.time() - start_time > stream_timeout:
+                                raise ValueError('Timeout reached. Downloading the contents took too long.')
+                            byte_body += data
+                        raw_data['text'] = _decode(byte_body, dict(response.headers))
+                    else:
+                        byte_body = await response.read()
+                        raw_data['text'] = _decode(byte_body, dict(response.headers))
+                if args['headers']:
+                    headers = response.headers
+                    raw_data['headers'] = {}
+                    for head in iter(headers):
+                        if head not in raw_data['headers']:
+                            raw_data['headers'][head] = headers[head]
+                        elif isinstance(raw_data['headers'][head], str):
+                            raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
                         else:
-                            byte_body = await response.read()
-                            raw_data['text'] = _decode(byte_body, dict(response.headers))
-                    if args['headers']:
-                        headers = response.headers
-                        raw_data['headers'] = {}
-                        for head in iter(headers):
-                            if head not in raw_data['headers']:
-                                raw_data['headers'][head] = headers[head]
-                            elif isinstance(raw_data['headers'][head], str):
-                                raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
-                            else:
-                                raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
-                    if args['cookies']:
-                        raw_data['cookies'] = response.cookies
-                    if args['status']:
-                        raw_data['status'] = response.status
-                    if args['redirects']:
-                        raw_data['redirects'] = len(response.history)
-                    raw_data['url'] = url
-                    raw_data['error'] = False
-                    return raw_data
-            except Exception as e:
-                raw_data = {'error': str(e) + str(traceback)}
+                            raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
+                if args['cookies']:
+                    raw_data['cookies'] = response.cookies
+                if args['status']:
+                    raw_data['status'] = response.status
+                if args['redirects']:
+                    raw_data['redirects'] = len(response.history)
+                raw_data['url'] = url
+                raw_data['error'] = False
                 return raw_data
 
     async def req(args):
