@@ -186,7 +186,7 @@ class AsyncSharedOutSockets:
 
 
 class AnalysisFrame:
-    def __init__(self, ipc_path='/tmp/mass_pipeline/'):
+    def __init__(self, ipc_path='/tmp/mass_pipeline/', loop=None):
         """Creates a new AnalysisFrame object.
 
         A AnalysisFrame object wraps Streamer Devices and the analysis stages.
@@ -199,12 +199,15 @@ class AnalysisFrame:
             self.ipc_path = ipc_path + (''.join(random.choice(string.ascii_letters) for m in range(16))) + '/'
         os.makedirs(self.ipc_path)
         self.ipc_name = 0
-        self.loop = asyncio.get_event_loop()
         self.async_context = zmq.asyncio.Context()
         self.context = zmq.Context()
         self.streamers = []
         self.address_dict = {}
         self.stages = {}
+        if not loop:
+            self.loop = asyncio.get_event_loop()
+        else:
+            self.loop = loop
 
     def add_stage(self, method, name, replicas=1, concurrency='process', args=(), next_stage=None, queue_size=100):
         """Adds a new Analysis Stage to the AnalysisFrame.
