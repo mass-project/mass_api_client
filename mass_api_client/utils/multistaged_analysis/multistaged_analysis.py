@@ -1,14 +1,51 @@
 import asyncio
 import os
 import pickle
+import random
+import string
 import sys
 import traceback
 import zlib
-import random
-import string
 from multiprocessing import Process
 
 import zmq.asyncio
+
+if os.getenv('SENTRY_DSN', None):
+    from raven import Client
+
+
+class StageErrorHandlerStdout:
+    """
+    This error handler is meant as backup handler because the RequestObject gets lost.
+    Instead use the Module Error Handlers for failed Reports.
+    """
+
+    def __init__(self):
+        print('StageErrorHandlerStdout contructed')
+
+    def handle(self, e):
+        traceback.print_exc(file=sys.stdout)
+
+
+class StageErrorHandlerSentry:
+    """
+    This error handler is meant as backup handler because the RequestObject gets lost.
+    Instead use the Module Error Handlers for failed Reports.
+    """
+
+    def __init__(self):
+        self.sentry_dsn = os.getenv('SENTRY_DSN', None)
+        if self.sentry_dsn:
+            self.client = Client(self.sentry_dsn)
+        else:
+            print('ERROR: SENTRY_DSN is not defined.')
+
+    def handle(self, e):
+        if self.sentry_dsn:
+            self.client.captureException()
+        else:
+            print('ERROR: Cannot capture because SENTRY_DSN is not defined. Using stdout instead:')
+            traceback.print_exc(file=sys.stdout)
 
 
 class AsyncSockets:
@@ -59,7 +96,7 @@ class AsyncSockets:
 
 
 class AsyncAnalysisModule:
-    def __init__(self, context, method, name, args, in_address, loop, next_stage):
+    def __init__(self, context, method, name, args, in_address, loop, next_stage, backup_error_handler):
         self.name = name
         self.in_address = in_address
         self.sockets = None
@@ -68,14 +105,16 @@ class AsyncAnalysisModule:
         self.args = args
         self.loop = loop
         self.next_stage = next_stage
+        self.backup_error_hander = backup_error_handler
 
     async def _bootstrap_stage(self):
         while True:
             try:
                 await asyncio.ensure_future(self.analysis_method(self.sockets, *self.args), loop=self.loop)
             except Exception as e:
-                print(e, self.analysis_method)
-                traceback.print_exc(file=sys.stdout)
+                self.backup_error_hander.handle(e)
+                #print(e, self.analysis_method)
+                #traceback.print_exc(file=sys.stdout)
 
     def bootstrap_stage(self, shared_sockets):
         self.sockets = AsyncSockets(shared_sockets, self.context, self.in_address, self.loop, self.name,
@@ -126,13 +165,14 @@ class SyncSockets:
 
 
 class SyncAnalysisModule:
-    def __init__(self, context, method, name, args, next_stage):
+    def __init__(self, context, method, name, args, next_stage, backup_error_handler):
         self.address_dict = None
         self.name = name
         self.context = context
         self.analysis_method = method
         self.args = args
         self.next_stage = next_stage
+        self.backup_error_hander = backup_error_handler
 
     def _bootstrap_stage(self, args):
         print('syncstage', self.name, os.getpid())
@@ -141,8 +181,7 @@ class SyncAnalysisModule:
             try:
                 self.analysis_method(sockets, *args)
             except Exception as e:
-                print(e, self.analysis_method)
-                traceback.print_exc(file=sys.stdout)
+                self.backup_error_hander.handle(e)
 
     def bootstrap_stage(self, address_dict):
         self.address_dict = address_dict
@@ -209,7 +248,8 @@ class AnalysisFrame:
         else:
             self.loop = loop
 
-    def add_stage(self, method, name, replicas=1, concurrency='process', args=(), next_stage=None, queue_size=100):
+    def add_stage(self, method, name, replicas=1, concurrency='process', args=(), next_stage=None, queue_size=100,
+                  backup_error_handler=StageErrorHandlerSentry()):
         """Adds a new Analysis Stage to the AnalysisFrame.
         :param queue_size: The size of the ZeroMQ Queue for this Stage. The real size might be greater depending on the
         tcp buffer size of the os.
@@ -220,6 +260,8 @@ class AnalysisFrame:
         :param name: The name of the Stage. It can be used to address communication between the stages.
         :param replicas: Number of the Replicas of this stage.
         :param args: A tuple of arguments which will be passed when the function is started.
+        :param backup_error_handler: A Error Handler Object which ensures thas the pipeline doesn't crash. 
+        Unsubmitted Reports get eventually lost, so it might be better to catch Exceptions inside the analysis module.
         """
         self.address_dict[name] = {}
         out_address = 'ipc://' + self.ipc_path + str(self.ipc_name)
@@ -237,9 +279,9 @@ class AnalysisFrame:
         for _ in range(replicas):
             if concurrency == 'async':
                 new_stage = AsyncAnalysisModule(self.async_context, method, name, args, self.address_dict[name]['out'],
-                                                self.loop, next_stage)
+                                                self.loop, next_stage, backup_error_handler)
             else:
-                new_stage = SyncAnalysisModule(self.context, method, name, args, next_stage)
+                new_stage = SyncAnalysisModule(self.context, method, name, args, next_stage, backup_error_handler)
             self.stages[name].append(new_stage)
 
     def start_all_stages(self):
