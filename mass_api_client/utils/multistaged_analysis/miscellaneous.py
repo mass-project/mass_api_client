@@ -6,36 +6,7 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from mass_api_client.resources import *
 
 from .multistaged_analysis import RequestObject
-
-
-def error_handling_sync_debug(e, data, sockets):
-    data.report['failed'] = True
-    data.report['error_message'] = str(e) + traceback.format_exc()
-    data.report_tag(['failed'])
-    sockets.send(data, 'report')
-    print(traceback.format_exc())
-
-
-async def error_handling_async_debug(e, data, sockets):
-    data.report['failed'] = True
-    data.report['error_message'] = str(e) + traceback.format_exc()
-    data.report_tag(['failed'])
-    await sockets.send(data, 'report')
-    print(traceback.format_exc())
-
-
-def error_handling_sync(e, data, sockets):
-    data.report['failed'] = True
-    data.report['error_message'] = str(e) + traceback.format_exc()
-    data.report_tag(['failed'])
-    sockets.send(data, 'report')
-
-
-async def error_handling_async(e, data, sockets):
-    data.report['failed'] = True
-    data.report['error_message'] = str(e) + traceback.format_exc()
-    data.report_tag(['failed'])
-    await sockets.send(data, 'report')
+from .modul_error_handling import error_handling_async_sentry
 
 
 def create_sample_and_report(sockets, analysis_system):
@@ -103,7 +74,7 @@ def _decode(byte_body, headers):
         return byte_body.decode('utf-8', 'ignore')
 
 
-async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
+async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_requests=300, conn_timeout=60,
                    stream_timeout=300):
     async def fetch(url, args):
         async with sem:
