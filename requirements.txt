@@ -12,3 +12,4 @@ websocket-client
 pyzmq
 asyncio
 aiohttp
+raven==6.9.0
