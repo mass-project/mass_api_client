@@ -65,8 +65,10 @@ class Report(BaseResource):
                            parameters={'analysis_request': analysis_request.id})
 
     @classmethod
-    def create_without_request(cls, sample, analysis_system, tags=None, json_report_objects=None, raw_report_objects=None,
-                               additional_metadata=None, analysis_date=None, failed=False, error_message=None):
+    def create_without_request(cls, sample, analysis_system, tags=None, json_report_objects=None,
+                               raw_report_objects=None,
+                               additional_metadata=None, analysis_date=None, failed=False, error_message=None,
+                               use_queue=False):
         """
         Create a new report on the queue
 
@@ -89,11 +91,15 @@ class Report(BaseResource):
         if raw_report_objects is None:
             raw_report_objects = {}
 
-        return cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
-                           additional_binary_files=raw_report_objects, tags=tags,
-                           additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
-                           force_multipart=True, use_queue=True,
-                           parameters={'sample': sample.id, 'analysis_system': analysis_system.identifier_name})
+        save_creation_point = cls._creation_point
+        cls._creation_point = cls._endpoint
+        report = cls._create(analysis_date=analysis_date, additional_json_files=json_report_objects,
+                             additional_binary_files=raw_report_objects, tags=tags,
+                             additional_metadata=additional_metadata, status=int(failed), error_message=error_message,
+                             sample=sample.url, analysis_system=analysis_system.url,
+                             force_multipart=True, use_queue=use_queue)
+        cls._creation_point = save_creation_point
+        return report
 
     @property
     def json_reports(self):
