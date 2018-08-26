@@ -42,7 +42,11 @@ class StageErrorHandlerSentry:
 
     def handle(self, e):
         if self.sentry_dsn:
-            self.client.captureException()
+            try:
+                self.client.captureException()
+            except:
+                print('ERROR: Cannot Capture Exception:')
+                traceback.print_exc(file=sys.stdout)
         else:
             print('ERROR: Cannot capture because SENTRY_DSN is not defined. Using stdout instead:')
             traceback.print_exc(file=sys.stdout)
