@@ -1,5 +1,6 @@
 import json
 import logging
+import _thread
 from uuid import uuid4
 from sys import exc_info
 from traceback import format_exception, print_tb
@@ -12,10 +13,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 class QueueHandler(stomp.ConnectionListener):
     def __init__(self, api_key, url):
-        self.conn = WebsocketConnection(ws_uris=[url])
+        self.conn = WebsocketConnection(ws_uris=[url], reconnect_sleep_increase=1, reconnect_sleep_initial=0.5, reconnect_attempts_max=10)
         #self.conn = stomp.Connection11()
         self.conn.set_listener('', self)
-        #self.conn.set_listener('hearbeat', stomp.listener.HeartbeatListener)
         self.user = str(uuid4())
         self.password = api_key
         self.callbacks = {}
@@ -23,8 +23,13 @@ class QueueHandler(stomp.ConnectionListener):
         self._reconnect = True
 
     def _ensure_connection(self):
-        if not self.conn.is_connected():
-            self.conn.connect(self.user, self.password, headers={'heart-beat': '0,10000'}, wait=True)
+        logging.debug('Ensure the queue is connected')
+        if self.conn is None or not self.conn.is_connected():
+            logging.info('Queue is not connected. Connecting.')
+            try:
+                self.conn.connect(self.user, self.password, headers={'heart-beat': '0,10000'}, wait=True)
+            except Exception:
+                _thread.interrupt_main()
             for queue_id in self.callbacks.keys():
                 self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack='client')
 
