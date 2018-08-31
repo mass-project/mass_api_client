@@ -12,7 +12,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class QueueHandler(stomp.ConnectionListener):
-    def __init__(self, api_key, url):
+    def __init__(self, api_key, url, prefetch_count=1):
         self.conn = WebsocketConnection(ws_uris=[url], reconnect_sleep_increase=1, reconnect_sleep_initial=0.5, reconnect_attempts_max=10)
         #self.conn = stomp.Connection11()
         self.conn.set_listener('', self)
@@ -20,6 +20,8 @@ class QueueHandler(stomp.ConnectionListener):
         self.password = api_key
         self.callbacks = {}
         self.destination_queue_ids = {}
+        self.prefetch_count = prefetch_count
+        self.ack = 'client-individual'
         self._reconnect = True
 
     def _ensure_connection(self):
@@ -31,7 +33,8 @@ class QueueHandler(stomp.ConnectionListener):
             except Exception:
                 _thread.interrupt_main()
             for queue_id in self.callbacks.keys():
-                self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack='client')
+                self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id,
+                                    ack=self.ack, headers={'prefetch-count': self.prefetch_count})
 
     def consume(self, queue_id, callback):
         """
@@ -44,7 +47,8 @@ class QueueHandler(stomp.ConnectionListener):
         self._ensure_connection()
         self.callbacks[queue_id] = callback
         self.destination_queue_ids[destination] = queue_id
-        self.conn.subscribe(destination=destination, id=queue_id, ack='client')
+        self.conn.subscribe(destination=destination, id=queue_id,
+                            ack=self.ack, headers={'prefetch-count': self.prefetch_count})
 
     def send(self, queue_id, data, headers=None):
         self._ensure_connection()
