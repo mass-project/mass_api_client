@@ -12,7 +12,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class QueueHandler(stomp.ConnectionListener):
-    def __init__(self, api_key, url, prefetch_count=1):
+    def __init__(self, api_key, url):
         self.conn = WebsocketConnection(ws_uris=[url], reconnect_sleep_increase=1, reconnect_sleep_initial=0.5, reconnect_attempts_max=10)
         #self.conn = stomp.Connection11()
         self.conn.set_listener('', self)
@@ -20,7 +20,7 @@ class QueueHandler(stomp.ConnectionListener):
         self.password = api_key
         self.callbacks = {}
         self.destination_queue_ids = {}
-        self.prefetch_count = prefetch_count
+        self.prefetch_counts = {}
         self.ack = 'client-individual'
         self._reconnect = True
 
@@ -33,22 +33,24 @@ class QueueHandler(stomp.ConnectionListener):
             except Exception:
                 _thread.interrupt_main()
             for queue_id in self.callbacks.keys():
-                self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id,
-                                    ack=self.ack, headers={'prefetch-count': self.prefetch_count})
+                self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack=self.ack,
+                                    headers={'prefetch-count': self.prefetch_counts[queue_id]})
 
-    def consume(self, queue_id, callback):
+    def consume(self, queue_id, callback, prefetch_count):
         """
 
         :param queue_id: The name of the queue.
         :param callback: The callback receives conn, headers and data and should return True to ACK the message.
+        :param prefetch_count: The number of requests to fetch from the queue at once.
         :return:
         """
         destination = '/queue/{}'.format(queue_id)
         self._ensure_connection()
         self.callbacks[queue_id] = callback
+        self.prefetch_counts[queue_id] = prefetch_count
         self.destination_queue_ids[destination] = queue_id
         self.conn.subscribe(destination=destination, id=queue_id,
-                            ack=self.ack, headers={'prefetch-count': self.prefetch_count})
+                            ack=self.ack, headers={'prefetch-count': prefetch_count})
 
     def send(self, queue_id, data, headers=None):
         self._ensure_connection()

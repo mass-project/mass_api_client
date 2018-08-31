@@ -46,17 +46,18 @@ class AnalysisSystem(BaseResource):
         from .analysis_request import AnalysisRequest
         return AnalysisRequest.create(sample, self, priority, parameters)
 
-    def consume_requests(self, callback):
+    def consume_requests(self, callback, prefetch_count=1):
         """
         Process analysis requests for this analysis system.
 
         :param callback: A callable to process the analysis request.
         The callback should take the request and sample as parameters.
+        :param prefetch_count: The number of requests to fetch from the queue at once.
         """
         con = ConnectionManager().get_connection(self._connection_alias)
         request_queue_id = '{}_analysis-requests'.format(self.identifier_name)
         consumer = AnalysisRequestConsumer(callback)
-        con.get_queue_handler().consume(request_queue_id, consumer)
+        con.get_queue_handler().consume(request_queue_id, consumer, prefetch_count)
 
         while True:
             sleep(1)
