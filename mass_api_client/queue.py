@@ -6,15 +6,16 @@ from sys import exc_info
 from traceback import format_exception, print_tb
 
 import stomp
-from stomp.adapter.webstomp import WebsocketConnection
+#from stomp.adapter.webstomp import WebsocketConnection
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+from .webstomp import WebstompConnection
 
 
 class QueueHandler(stomp.ConnectionListener):
     def __init__(self, api_key, url):
-        self.conn = WebsocketConnection(ws_uris=[url], reconnect_sleep_increase=1, reconnect_sleep_initial=0.5, reconnect_attempts_max=10)
+        #self.conn = WebsocketConnection(ws_uris=[url], reconnect_sleep_increase=1, reconnect_sleep_initial=0.5, reconnect_attempts_max=10)
         #self.conn = stomp.Connection11()
+        self.conn = WebstompConnection(url)
         self.conn.set_listener('', self)
         self.user = str(uuid4())
         self.password = api_key
