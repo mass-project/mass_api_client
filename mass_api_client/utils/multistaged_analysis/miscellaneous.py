@@ -4,6 +4,7 @@ import traceback
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from mass_api_client.resources import *
+from requests.structures import CaseInsensitiveDict
 
 from .multistaged_analysis import RequestObject
 from .modul_error_handling import error_handling_async_sentry
@@ -95,7 +96,7 @@ async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_
                         raw_data['text'] = _decode(byte_body, dict(response.headers))
                 if args['headers']:
                     headers = response.headers
-                    raw_data['headers'] = {}
+                    raw_data['headers'] = CaseInsensitiveDict()
                     for head in iter(headers):
                         if head not in raw_data['headers']:
                             raw_data['headers'][head] = headers[head]
