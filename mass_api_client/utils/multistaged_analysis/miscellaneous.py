@@ -7,7 +7,7 @@ from mass_api_client.resources import *
 from requests.structures import CaseInsensitiveDict
 
 from .multistaged_analysis import RequestObject
-from .modul_error_handling import error_handling_async_sentry
+from .modul_error_handling import error_handling_async
 
 
 def create_sample_and_report(sockets, analysis_system):
@@ -75,7 +75,7 @@ def _decode(byte_body, headers):
         return byte_body.decode('utf-8', 'ignore')
 
 
-async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_requests=300, conn_timeout=60,
+async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
                    stream_timeout=300):
     async def fetch(url, args):
         async with sem:
