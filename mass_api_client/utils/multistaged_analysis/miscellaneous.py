@@ -11,6 +11,13 @@ from .multistaged_analysis import RequestObject
 from .modul_error_handling import error_handling_async
 
 
+def create_sample(sockets, analysis_system):
+    data = sockets.receive()
+    Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
+                      ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
+tlp_level=data.sample_tlp_level, tags=data.sample_tags, use_queue=True)
+
+
 def create_sample_and_report(sockets, analysis_system):
     data = sockets.receive()
     s = Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
