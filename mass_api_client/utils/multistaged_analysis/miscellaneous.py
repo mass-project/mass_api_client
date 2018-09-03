@@ -145,10 +145,9 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     await sockets.send(data)
                 else:
                     data.make_instructed_stage_report(sockets, future)
-                    # if data.stage_instruction =
                     await sockets.send_instructed(data)
-    parralel_req_env = int(os.getenv('PAR_REQ', parallel_requests))
-    sem = asyncio.Semaphore(parralel_req_env)
+    
+    sem = asyncio.Semaphore(parallel_requests)
     async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=conn_timeout),
                              connector=TCPConnector(verify_ssl=False)) as session:
-        await asyncio.gather(*[run() for _ in range(parralel_req_env)])
+        await asyncio.gather(*[run() for _ in range(parallel_requests)])
