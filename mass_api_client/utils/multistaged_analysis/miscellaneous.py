@@ -116,8 +116,11 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     raw_data['cookies'] = response.cookies
                 if args['status']:
                     raw_data['status'] = response.status
-                if args['redirects']:
-                    raw_data['redirects'] = len(response.history)
+                if args['history']:
+                    history = []
+                    for hist in response.history:
+                        history.append(str(hist.url))
+                    raw_data['history'] = history
                 raw_data['url'] = url
                 raw_data['error'] = False
                 return raw_data
@@ -137,7 +140,7 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     'cookies': data.get_instruction(sockets, 'cookies'),
                     'headers': data.get_instruction(sockets, 'headers'),
                     'status': data.get_instruction(sockets, 'status'),
-                    'redirects': data.get_instruction(sockets, 'redirects'),
+                    'history': data.get_instruction(sockets, 'history'),
                     'client_headers': data.get_instruction(sockets, 'client_headers'),
                     'stream': data.get_instruction(sockets, 'stream')}
 
@@ -158,3 +161,4 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
     async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=conn_timeout),
                              connector=TCPConnector(verify_ssl=False)) as session:
         await asyncio.gather(*[run() for _ in range(parallel_requests)])
+
