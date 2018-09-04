@@ -108,7 +108,10 @@ async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_
                 if args['status']:
                     raw_data['status'] = response.status
                 if args['history']:
-                    raw_data['history'] = response.history
+                    history = []
+                    for hist in response.history:
+                        history.append(str(hist.url))
+                    raw_data['history'] = history
                 raw_data['url'] = url
                 raw_data['error'] = False
                 return raw_data
@@ -128,8 +131,8 @@ async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_
                     'cookies': data.get_instruction(sockets, 'cookies'),
                     'headers': data.get_instruction(sockets, 'headers'),
                     'status': data.get_instruction(sockets, 'status'),
-                    'redirects': data.get_instruction(sockets, 'redirects'),
                     'client_headers': data.get_instruction(sockets, 'client_headers'),
+                    'history': data.get_instruction(sockets, 'history',
                     'stream': data.get_instruction(sockets, 'stream')}
 
             try:
