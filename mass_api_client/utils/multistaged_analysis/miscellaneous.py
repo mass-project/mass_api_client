@@ -107,8 +107,8 @@ async def get_http(sockets, error_handler=error_handling_async_sentry, parallel_
                     raw_data['cookies'] = response.cookies
                 if args['status']:
                     raw_data['status'] = response.status
-                if args['redirects']:
-                    raw_data['redirects'] = len(response.history)
+                if args['history']:
+                    raw_data['history'] = response.history
                 raw_data['url'] = url
                 raw_data['error'] = False
                 return raw_data
