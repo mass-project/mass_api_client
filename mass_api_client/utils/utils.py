@@ -27,16 +27,30 @@ if __name__ == "__main__":
     process_analyses(analysis_system_instance, size_analysis, sleep_time=7)
 """
 import logging
-import signal
 from traceback import format_exception, print_tb
 
 import requests
-import time
-from sys import exc_info
 
 from mass_api_client import resources
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+
+def handle_failed_analysis_request(analysis_request, e, use_queue=False):
+    exc_str = ''.join(format_exception(*e))
+    exc_type = e[0].__name__
+    print_tb(e[2])
+    metadata = {
+        'exception type': exc_type
+    }
+
+    try:
+        analysis_request.create_report(additional_metadata=metadata,
+                                       tags=['failed_analysis', 'exception:{}'.format(exc_type)],
+                                       raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
+                                       error_message=exc_str, use_queue=use_queue)
+    except Exception:
+        logging.error('Could not create a report on the server.')
 
 
 def get_or_create_analysis_system(identifier='', verbose_name='', tag_filter_exp='',
@@ -65,55 +79,4 @@ def get_or_create_analysis_system(identifier='', verbose_name='', tag_filter_exp
 
     return analysis_system
 
-
-def process_analyses(analysis_system_instance, analysis_method, sleep_time, delete_instance_on_exit=False, catch_exceptions=False):
-    """Process all analyses which are scheduled for the analysis system instance.
-
-    This function does not terminate on its own, give it a SIGINT or Ctrl+C to stop.
-
-    :param analysis_system_instance: The analysis system instance for which the analyses are scheduled.
-    :param analysis_method: A function or method which analyses a scheduled analysis. The function must not take further arguments.
-    :param sleep_time: Time to wait between polls to the MASS server
-    :param delete_instance_on_exit: If true remove the analysis_system_instance on the server before exit.
-    :param catch_exceptions: Catch all exceptions during analysis and create a failure report on the server instead of termination.
-    """
-
-    def handle_exception(scheduled_analysis, e):
-        exc_str = ''.join(format_exception(*e))
-        exc_type = e[0].__name__
-        print_tb(e[2])
-        metadata = {
-            'exception type': exc_type
-        }
-
-        try:
-            scheduled_analysis.create_report(additional_metadata=metadata,
-                                             tags=['failed_analysis', 'exception:{}'.format(exc_type)],
-                                             raw_report_objects={'traceback': ('traceback', exc_str)}, failed=True,
-                                             error_message=exc_str)
-        except Exception:
-            logging.error('Could not create a report on the server.')
-
-    def exit_analysis_process(signum, frame):
-        if delete_instance_on_exit:
-            logging.debug('Deleting AnalysisSystemInstance...')
-            analysis_system_instance.delete()
-        logging.debug('Shutting down.')
-        exit(0)
-
-    signal.signal(signal.SIGINT, exit_analysis_process)
-    signal.signal(signal.SIGTERM, exit_analysis_process)
-
-    while True:
-        analyses = analysis_system_instance.get_scheduled_analyses()
-        for analysis in analyses:
-            try:
-                analysis_method(analysis)
-            except Exception:
-                if not catch_exceptions:
-                    raise
-                handle_exception(analysis, exc_info())
-
-        if not analyses:
-            time.sleep(sleep_time)
 
