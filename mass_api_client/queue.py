@@ -1,6 +1,7 @@
 import json
 import logging
-import _thread
+import os
+import sys
 from uuid import uuid4
 from sys import exc_info
 from traceback import format_exception, print_tb
@@ -31,7 +32,10 @@ class QueueHandler(stomp.ConnectionListener):
             try:
                 self.conn.connect(self.user, self.password, headers={'heart-beat': '0,10000'}, wait=True)
             except Exception:
-                _thread.interrupt_main()
+                logging.exception('Could not establish connection to queue server.')
+                sys.stdout.flush()
+                sys.stdin.flush()
+                os._exit(-1)
             for queue_id in self.callbacks.keys():
                 self.conn.subscribe(destination='/queue/{}'.format(queue_id), id=queue_id, ack=self.ack,
                                     headers={'prefetch-count': self.prefetch_counts[queue_id]})
