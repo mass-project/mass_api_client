@@ -157,7 +157,8 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     await sockets.send_instructed(data)
     
     sem = asyncio.Semaphore(parallel_requests)
+    resolver = AsyncResolver()
     async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=None, sock_read=conn_timeout),
-                             connector=TCPConnector(limit=150,verify_ssl=False)) as session:
+                             connector=TCPConnector(limit=150,verify_ssl=False, , resolver=resolver)) as session:
         await asyncio.gather(*[run() for _ in range(parallel_requests)])
 
