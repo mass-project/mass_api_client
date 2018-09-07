@@ -86,44 +86,43 @@ def _decode(byte_body, headers):
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
                    stream_timeout=300):
     async def fetch(url, args):
-        async with sem:
-            if args['client_headers']:
-                await session.post(url, headers=args['client_headers'])
-            async with session.get(url, allow_redirects=True) as response:
-                raw_data = {}
-                if args['text']:
-                    if args['stream']:
-                        start_time, byte_body = time.time(), b''
-                        async for data in response.content.iter_chunked(1024):
-                            if time.time() - start_time > stream_timeout:
-                                raise ValueError('Timeout reached. Downloading the contents took too long.')
-                            byte_body += data
-                        raw_data['text'] = _decode(byte_body, dict(response.headers))
+        if args['client_headers']:
+            await session.post(url, headers=args['client_headers'])
+        async with session.get(url, allow_redirects=True) as response:
+            raw_data = {}
+            if args['text']:
+                if args['stream']:
+                    start_time, byte_body = time.time(), b''
+                    async for data in response.content.iter_chunked(1024):
+                        if time.time() - start_time > stream_timeout:
+                            raise ValueError('Timeout reached. Downloading the contents took too long.')
+                        byte_body += data
+                    raw_data['text'] = _decode(byte_body, dict(response.headers))
+                else:
+                    byte_body = await response.read()
+                    raw_data['text'] = _decode(byte_body, dict(response.headers))
+            if args['headers']:
+                headers = response.headers
+                raw_data['headers'] = CaseInsensitiveDict()
+                for head in iter(headers):
+                    if head not in raw_data['headers']:
+                        raw_data['headers'][head] = headers[head]
+                    elif isinstance(raw_data['headers'][head], str):
+                        raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
                     else:
-                        byte_body = await response.read()
-                        raw_data['text'] = _decode(byte_body, dict(response.headers))
-                if args['headers']:
-                    headers = response.headers
-                    raw_data['headers'] = CaseInsensitiveDict()
-                    for head in iter(headers):
-                        if head not in raw_data['headers']:
-                            raw_data['headers'][head] = headers[head]
-                        elif isinstance(raw_data['headers'][head], str):
-                            raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
-                        else:
-                            raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
-                if args['cookies']:
-                    raw_data['cookies'] = response.cookies
-                if args['status']:
-                    raw_data['status'] = response.status
-                if args['history']:
-                    history = []
-                    for hist in response.history:
-                        history.append(str(hist.url))
-                    raw_data['history'] = history
-                raw_data['url'] = url
-                raw_data['error'] = False
-                return raw_data
+                        raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
+            if args['cookies']:
+                raw_data['cookies'] = response.cookies
+            if args['status']:
+                raw_data['status'] = response.status
+            if args['history']:
+                history = []
+                for hist in response.history:
+                    history.append(str(hist.url))
+                raw_data['history'] = history
+            raw_data['url'] = url
+            raw_data['error'] = False
+            return raw_data
 
     async def req(args):
         tasks = []
@@ -158,7 +157,7 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                     await sockets.send_instructed(data)
     
     sem = asyncio.Semaphore(parallel_requests)
-    async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=conn_timeout),
-                             connector=TCPConnector(verify_ssl=False)) as session:
+    async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=None, sock_read=conn_timeout),
+                             connector=TCPConnector(limit=150,verify_ssl=False)) as session:
         await asyncio.gather(*[run() for _ in range(parallel_requests)])
 
