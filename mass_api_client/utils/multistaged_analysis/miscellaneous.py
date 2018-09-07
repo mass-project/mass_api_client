@@ -1,21 +1,22 @@
 import asyncio
+import os
 import time
 import traceback
-import os
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from aiohttp.resolver import AsyncResolver
 from mass_api_client.resources import *
 from requests.structures import CaseInsensitiveDict
 
-from .multistaged_analysis import RequestObject
 from .modul_error_handling import error_handling_async
+from .multistaged_analysis import RequestObject
 
 
 def create_sample(sockets, analysis_system):
     data = sockets.receive()
     Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
-                      ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
-tlp_level=data.sample_tlp_level, tags=data.sample_tags, use_queue=True)
+                  ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
+                  tlp_level=data.sample_tlp_level, tags=data.sample_tags, use_queue=True)
 
 
 def create_sample_and_report(sockets, analysis_system):
@@ -155,10 +156,9 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                 else:
                     data.make_instructed_stage_report(sockets, future)
                     await sockets.send_instructed(data)
-    
+
     sem = asyncio.Semaphore(parallel_requests)
     resolver = AsyncResolver()
     async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=None, sock_read=conn_timeout),
-                             connector=TCPConnector(limit=150,verify_ssl=False, resolver=resolver)) as session:
+                             connector=TCPConnector(limit=150, verify_ssl=False, resolver=resolver)) as session:
         await asyncio.gather(*[run() for _ in range(parallel_requests)])
-
