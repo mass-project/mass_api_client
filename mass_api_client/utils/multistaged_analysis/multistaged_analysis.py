@@ -189,6 +189,7 @@ class SyncAnalysisModule:
     def bootstrap_stage(self, address_dict):
         self.address_dict = address_dict
         p = Process(target=self._bootstrap_stage, args=(self.args,))
+        p.daemon = True
         p.start()
         return p
 
@@ -302,8 +303,10 @@ class AnalysisFrame:
                 if type(module) is SyncAnalysisModule:
                     processes.append(module.bootstrap_stage(self.address_dict))
         self.loop.run_until_complete(asyncio.gather(*coros))
-        for p in processes:
-            p.join()
+        while True:
+            for p in processes:
+                if not p.is_alive():
+                    sys.exit("Stage unexpectedly exited.")
 
     def start_streamer_workers(self):
         for streamer in self.streamers:
