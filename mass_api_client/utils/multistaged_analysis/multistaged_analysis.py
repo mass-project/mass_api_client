@@ -7,6 +7,7 @@ import sys
 import traceback
 import zlib
 from multiprocessing import Process
+from time import sleep
 
 import zmq.asyncio
 
@@ -304,6 +305,7 @@ class AnalysisFrame:
                     processes.append(module.bootstrap_stage(self.address_dict))
         self.loop.run_until_complete(asyncio.gather(*coros))
         while True:
+            sleep(1)
             for p in processes:
                 if not p.is_alive():
                     sys.exit("Stage unexpectedly exited.")
