@@ -190,7 +190,6 @@ class SyncAnalysisModule:
     def bootstrap_stage(self, address_dict):
         self.address_dict = address_dict
         p = Process(target=self._bootstrap_stage, args=(self.args,))
-        p.daemon = True
         p.start()
         return p
 
