@@ -1,21 +1,22 @@
 import asyncio
+import os
 import time
 import traceback
-import os
 
 from aiohttp import ClientSession, ClientTimeout, TCPConnector
+from aiohttp.resolver import AsyncResolver
 from mass_api_client.resources import *
 from requests.structures import CaseInsensitiveDict
 
-from .multistaged_analysis import RequestObject
 from .modul_error_handling import error_handling_async
+from .multistaged_analysis import RequestObject
 
 
 def create_sample(sockets, analysis_system):
     data = sockets.receive()
     Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
-                      ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
-tlp_level=data.sample_tlp_level, tags=data.sample_tags, use_queue=True)
+                  ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
+                  tlp_level=data.sample_tlp_level, tags=data.sample_tags, use_queue=True)
 
 
 def create_sample_and_report(sockets, analysis_system):
@@ -86,44 +87,43 @@ def _decode(byte_body, headers):
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
                    stream_timeout=300):
     async def fetch(url, args):
-        async with sem:
-            if args['client_headers']:
-                await session.post(url, headers=args['client_headers'])
-            async with session.get(url, allow_redirects=True) as response:
-                raw_data = {}
-                if args['text']:
-                    if args['stream']:
-                        start_time, byte_body = time.time(), b''
-                        async for data in response.content.iter_chunked(1024):
-                            if time.time() - start_time > stream_timeout:
-                                raise ValueError('Timeout reached. Downloading the contents took too long.')
-                            byte_body += data
-                        raw_data['text'] = _decode(byte_body, dict(response.headers))
+        if args['client_headers']:
+            await session.post(url, headers=args['client_headers'])
+        async with session.get(url, allow_redirects=True) as response:
+            raw_data = {}
+            if args['text']:
+                if args['stream']:
+                    start_time, byte_body = time.time(), b''
+                    async for data in response.content.iter_chunked(1024):
+                        if time.time() - start_time > stream_timeout:
+                            raise ValueError('Timeout reached. Downloading the contents took too long.')
+                        byte_body += data
+                    raw_data['text'] = _decode(byte_body, dict(response.headers))
+                else:
+                    byte_body = await response.read()
+                    raw_data['text'] = _decode(byte_body, dict(response.headers))
+            if args['headers']:
+                headers = response.headers
+                raw_data['headers'] = CaseInsensitiveDict()
+                for head in iter(headers):
+                    if head not in raw_data['headers']:
+                        raw_data['headers'][head] = headers[head]
+                    elif isinstance(raw_data['headers'][head], str):
+                        raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
                     else:
-                        byte_body = await response.read()
-                        raw_data['text'] = _decode(byte_body, dict(response.headers))
-                if args['headers']:
-                    headers = response.headers
-                    raw_data['headers'] = CaseInsensitiveDict()
-                    for head in iter(headers):
-                        if head not in raw_data['headers']:
-                            raw_data['headers'][head] = headers[head]
-                        elif isinstance(raw_data['headers'][head], str):
-                            raw_data['headers'][head] = (raw_data['headers'][head], headers[head])
-                        else:
-                            raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
-                if args['cookies']:
-                    raw_data['cookies'] = response.cookies
-                if args['status']:
-                    raw_data['status'] = response.status
-                if args['history']:
-                    history = []
-                    for hist in response.history:
-                        history.append(str(hist.url))
-                    raw_data['history'] = history
-                raw_data['url'] = url
-                raw_data['error'] = False
-                return raw_data
+                        raw_data['headers'][head] = raw_data['headers'][head] + (headers[head],)
+            if args['cookies']:
+                raw_data['cookies'] = response.cookies
+            if args['status']:
+                raw_data['status'] = response.status
+            if args['history']:
+                history = []
+                for hist in response.history:
+                    history.append(str(hist.url))
+                raw_data['history'] = history
+            raw_data['url'] = url
+            raw_data['error'] = False
+            return raw_data
 
     async def req(args):
         tasks = []
@@ -156,9 +156,9 @@ async def get_http(sockets, error_handler=error_handling_async, parallel_request
                 else:
                     data.make_instructed_stage_report(sockets, future)
                     await sockets.send_instructed(data)
-    
-    sem = asyncio.Semaphore(parallel_requests)
-    async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=conn_timeout),
-                             connector=TCPConnector(verify_ssl=False)) as session:
-        await asyncio.gather(*[run() for _ in range(parallel_requests)])
 
+    sem = asyncio.Semaphore(parallel_requests)
+    resolver = AsyncResolver()
+    async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=None, sock_read=conn_timeout),
+                             connector=TCPConnector(limit=parallel_requests, verify_ssl=False, resolver=resolver)) as session:
+        await asyncio.gather(*[run() for _ in range(parallel_requests)])
