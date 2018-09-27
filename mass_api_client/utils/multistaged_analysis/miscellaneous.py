@@ -13,6 +13,13 @@ from .multistaged_analysis import RequestObject
 
 
 def create_sample(sockets, analysis_system):
+    """
+    Default stage to create samples.
+    It can be used to create analysis systems like the ct_crawler.
+
+    :param analysis_system: Specify this parameter with the args parameter of the
+                            :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
+    """
     data = sockets.receive()
     Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
                   ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
@@ -20,6 +27,13 @@ def create_sample(sockets, analysis_system):
 
 
 def create_sample_and_report(sockets, analysis_system):
+    """
+    Default stage to create samples and the corresponding reports without analysis requests.
+    It can be used to create analysis systems like the ct_crawler.
+
+    :param analysis_system: Specify this parameter with the args parameter of the
+                            :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
+    """
     data = sockets.receive()
     s = Sample.create(uri=data.sample_uri, domain=data.sample_domain, port=data.sample_port, ipv4=data.sample_ipv4,
                       ipv6=data.sample_ipv6, filename=data.sample_filename, file=data.sample_filename,
@@ -36,9 +50,11 @@ def create_sample_and_report(sockets, analysis_system):
 def get_requests(sockets, analysis_sys):
     """Default Stage to get requests from the MASS Server.
 
-    This function should be used as a parameter of the :func:`frame.add_stage` function.
+    This function can be used as a parameter of the
+    :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
 
-    :param analysis_sys: Specify this parameter over the args parameter of add_stage
+    :param analysis_sys: Specify this parameter with the args parameter of
+                         the :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
     """
 
     def func(request, sample):
@@ -50,11 +66,12 @@ def get_requests(sockets, analysis_sys):
 
 
 def report(sockets):
-    """Default stage to report analysis results to the MASS Server.
+    """
+    Default stage to report analysis results to the MASS Server.
 
-    This function should be used as a parameter of the :func:`frame.add_stage` function.
-    It waits until it gets a RequestObject over the queue.
-
+    This function should be used as a parameter of the
+    :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
+          It waits until it gets a RequestObject over the queue.
     """
     data = sockets.receive()
     data.request.create_report(json_report_objects=data.report['json_report_objects'],
