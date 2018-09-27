@@ -71,12 +71,12 @@ class AsyncSockets:
         """
         Send an object to the stage with the name specified with the 'stage' parameter.
         :param obj: The object to be send.
-        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the 
-                      'next_stage' parameter of the 
+        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the
+                      'next_stage' parameter of the
                       :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` functionis used.
         :param flags: Flags through to the pickle module.
         :param protocol: The protocol passed through to the pickle module.
-        :return: 
+        :return:
         """
         if stage is None:
             stage = self.next_stage
@@ -166,12 +166,12 @@ class SyncSockets:
         """
         Send an object to the stage with the name specified with the 'stage' parameter.
         :param obj: The object to be send.
-        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the 
-                      'next_stage' parameter of the 
+        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the
+                      'next_stage' parameter of the
                       :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` functionis used.
         :param flags: Flags through to the pickle module.
         :param protocol: The protocol passed through to the pickle module.
-        :return: 
+        :return:
         """
         if stage is None:
             stage = self.next_stage
@@ -370,6 +370,9 @@ class AnalysisFrame:
 
 
 class StageObject:
+    """
+    This is a base Class to deliver Samples, MASS-Reports and messages between Stages.
+    """
     def __init__(self, json_report_objects=None, raw_report_objects=None, additional_metadata=None, tags=None,
                  analysis_date=None, failed=False, error_message=None):
         self.stage_report = {}
@@ -460,28 +463,60 @@ class StageObject:
                     self.report['json_report_objects'][key] = report[key]
 
     def report_tag(self, tag_list):
+        """
+        This functino adds a list of Tags to the MASS report.
+        :param tag_list: A list of Tags.
+        """
         if not self.report['tags']:
             self.report['tags'] = []
         for tag in tag_list:
             self.report['tags'].append(tag)
 
     def report_failed(self, failed):
+        """
+        Sets the 'failed option' of the MASS report.
+        :param failed:
+        """
         self.report['failed'] = failed
 
     def report_raw_report_object(self, raw_report_objects):
+        """
+        Sets the raw report object of the MASS report.
+        :param raw_report_objects: The raw report object
+        """
         self.report['raw_report_objects'] = raw_report_objects
 
     def report_additional_metadata(self, additional_metadata):
+        """
+        Sets the additional metadata of the MASS report.
+        :param additional_metadata: The additional metadata.
+        """
         self.report['additional_metadata'] = additional_metadata
 
     def report_analysis_data(self, analysis_date):
+        """
+        Sets the analysis date of a the MASS report.
+        :param analysis_date: The analysis date.
+        """
         self.report['analysis_date'] = analysis_date
 
     def report_error_message(self, error_message):
+        """
+        Sets the error message of the MASS report.
+        :param error_message: The error message.
+        """
         self.report['error_message'] = error_message
 
 
 class RequestObject(StageObject):
+    """
+    This class keeps a sample and a analysis request.
+    Instances of this class can be used to get a analysis request and the corresponding sample from the MASS server,
+    process the analysis and report the results back to MASS.
+    It is meant to be used with stages based on the
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.get_requests` and
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.report` functions.
+    """
     def __init__(self, request, sample, json_report_objects=None, raw_report_objects=None,
                  additional_metadata=None, tags=None, analysis_date=None, failed=False, error_message=None):
         StageObject.__init__(self, json_report_objects, raw_report_objects, additional_metadata, tags, analysis_date,
@@ -491,6 +526,11 @@ class RequestObject(StageObject):
 
 
 class CreateSampleAndReportObject(StageObject):
+    """
+    Instances of this class can be used for analysis systems like the mass_ct_crawler wich create samples and
+    corresponding reports without analysis requests. It is meant to be used with staged based on the
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.create_sample_and_report` function.
+    """
     def __init__(self, sample_uri=None, sample_domain=None, sample_port=None, sample_ipv4=None, sample_ipv6=None,
                  sample_filename=None, sample_file=None, sample_tlp_level=0, sample_tags=None,
                  report_json_report_objects=None, report_raw_report_objects=None,
