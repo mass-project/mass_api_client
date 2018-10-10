@@ -5,6 +5,8 @@ python:
   - "3.6"
   - "pypy3.5"
 sudo: false
+before_install:
+  - "pip install websocket-client"
 script:
   - "nosetests"
 after_success:

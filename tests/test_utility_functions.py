@@ -32,28 +32,3 @@ class UtilsTestCase(HTTMockTestCase):
         with HTTMock(mass_mock):
             analysis_system = utils.get_or_create_analysis_system(identifier='strings', verbose_name='Strings', tag_filter_exp='')
             self.assertEqual(analysis_system.identifier_name, 'strings')
-
-    @mock.patch("time.sleep", side_effect=InterruptedError)
-    def test_process_analyses_without_scheduled_analyses(self, mocked_sleep):
-        asi_mock = mock.Mock()
-        asi_mock.get_scheduled_analyses.return_value = []
-        analysis_method = mock.Mock()
-        analysis_method.return_value = "some report"
-
-        with self.assertRaises(InterruptedError):
-            utils.process_analyses(asi_mock, analysis_method, 0)
-        self.assertTrue(asi_mock.get_scheduled_analyses.called)
-        self.assertFalse(analysis_method.called)
-
-    @mock.patch("time.sleep", side_effect=InterruptedError)
-    def test_process_analyses_with_scheduled_analyses(self, mocked_sleep):
-        asi_mock = mock.Mock()
-        asi_mock.get_scheduled_analyses.side_effect = ["some filesample", []]
-        analysis_method = mock.Mock()
-        analysis_method.return_value = "some report"
-
-        with self.assertRaises(InterruptedError):
-            utils.process_analyses(asi_mock, analysis_method, 0)
-        self.assertTrue(asi_mock.get_scheduled_analyses.called)
-        self.assertTrue(analysis_method.called)
-
