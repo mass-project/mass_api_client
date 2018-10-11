@@ -23,6 +23,6 @@ setup(name='mass_api_client',
       version=version,
       license='MIT',
       url='https://github.com/mass-project/mass_api_client',
-      install_requires=['requests==2.19.1', 'marshmallow==2.15.6'],
+      install_requires=['requests==2.19.1', 'marshmallow==2.16.0'],
       packages=find_packages(),
       )
