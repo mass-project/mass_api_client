@@ -54,6 +54,11 @@ class StageErrorHandlerSentry:
 
 
 class AsyncSockets:
+    """
+    Each :class:`~mass_api_client.utils.multistaged_analysis.AsyncAnalysisModule`-instance has its own instance of
+    :class:`~mass_api_client.utils.multistaged_analysis.AsyncSockets. They contain information like the name of the
+    stage or a list of all sockets. With the instance of this class objects can be sent to other stages.
+    """
     def __init__(self, shared_socket_list, context, in_address, loop, name, next_stage):
         self.name = name
         self.shared_socket_list = shared_socket_list
@@ -64,6 +69,16 @@ class AsyncSockets:
         self.next_stage = next_stage
 
     async def send(self, obj, stage=None, flags=0, protocol=-1):
+        """
+        Send an object to the stage with the name specified with the 'stage' parameter.
+        :param obj: The object to be send.
+        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the
+                      'next_stage' parameter of the
+                      :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` functionis used.
+        :param flags: Flags through to the pickle module.
+        :param protocol: The protocol passed through to the pickle module.
+        :return:
+        """
         if stage is None:
             stage = self.next_stage
         # force coroutine switch when sending because 'send' is blocking while queue isn't full
@@ -95,6 +110,11 @@ class AsyncSockets:
         return await self.shared_socket_list.out_sockets[obj.stage_instruction].send(z, flags=flags)
 
     async def receive(self, flags=0):
+        """
+        Receive objects which are in the queue of the stage in wich this function is called.
+        :param flags: Flags which are passed through to pickle.
+        :return: Returns the received object.
+        """
         z = await self.in_socket.recv(flags)
         p = zlib.decompress(z)
         return pickle.loads(p)
@@ -128,6 +148,11 @@ class AsyncAnalysisModule:
 
 
 class SyncSockets:
+    """
+        Each :class:`~mass_api_client.utils.multistaged_analysis.SyncAnalysisModule`-instance has its own instance of
+        :class:`~mass_api_client.utils.multistaged_analysis.SyncSockets. They contain information like the name of the
+        stage or a list of all sockets. With the instance of this class objects can be sent to other stages.
+        """
     def __init__(self, context, address_dict, name, next_stage):
         self.out_sockets = {}
         for entry in address_dict:
@@ -139,6 +164,16 @@ class SyncSockets:
         self.name = name
 
     def send(self, obj, stage=None, flags=0, protocol=-1):
+        """
+        Send an object to the stage with the name specified with the 'stage' parameter.
+        :param obj: The object to be send.
+        :param stage: The name of the stage to be send. If it is not specified the name of the stage passed with the
+                      'next_stage' parameter of the
+                      :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` functionis used.
+        :param flags: Flags through to the pickle module.
+        :param protocol: The protocol passed through to the pickle module.
+        :return:
+        """
         if stage is None:
             stage = self.next_stage
         p = pickle.dumps(obj, protocol)
@@ -164,6 +199,11 @@ class SyncSockets:
         return self.out_sockets[obj.stage_instruction].send(z, flags=flags)
 
     def receive(self, flags=0):
+        """
+        Receive objects which are in the queue of the stage in wich this function is called.
+        :param flags: Flags which are passed through to pickle.
+        :return: Returns the received object.
+        """
         z = self.in_socket.recv(flags)
         p = zlib.decompress(z)
         return pickle.loads(p)
@@ -195,6 +235,7 @@ class SyncAnalysisModule:
 
 
 class Streamer:
+    """This class wraps the ZeroMQ Streamer Devices. Each device runs in its own Process."""
     def __init__(self, frontend_address, backend_address, queue_size):
         self.frontend_address = frontend_address
         self.backend_address = backend_address
@@ -219,6 +260,9 @@ class Streamer:
 
 
 class AsyncSharedOutSockets:
+    """
+    Without the shared Sockets each stage would own its own outgoing Socket. To minimize this number, async Stages
+    share their outgoing Socket. Incomming Sockets can not be shared because they hold the queue of each stage."""
     def __init__(self, context, address_dict):
         self.out_sockets = {}
         for entry in address_dict:
@@ -228,13 +272,22 @@ class AsyncSharedOutSockets:
 
 
 class AnalysisFrame:
+    """
+     Instances of this class wrap ZeroMQ Streamer Devices and the analysis stages for an analysis pipeline.
+     The workflow consists of three steps:
+
+     1. Create frame
+     2. Add stages
+     3. Start stages
+    """
     def __init__(self, ipc_path='/tmp/mass_pipeline/', loop=None):
         """Creates a new AnalysisFrame object.
 
-        A AnalysisFrame object wraps Streamer Devices and the analysis stages.
+        :param ipc_path: A list of Addresses for the ZeroMQ Queues. The length of the list should be even.
+                         Each stage needs two addresses.
+        :param loop: Define a custom loop for the asyncronous stages. If this parameter is not defined the function
+                     :func:`~asyncio.get_event_loop` is called internally to get a event loop.
 
-        :param addresses: A list of Addresses for the ZeroMQ Queues. The length of the list should be even.
-        Each stage needs two addresses.
         """
         self.ipc_path = ipc_path + (''.join(random.choice(string.ascii_letters) for m in range(16))) + '/'
         while os.path.exists(self.ipc_path):
@@ -253,18 +306,23 @@ class AnalysisFrame:
 
     def add_stage(self, method, name, replicas=1, concurrency='process', args=(), next_stage=None, queue_size=100,
                   backup_error_handler=StageErrorHandlerSentry()):
-        """Adds a new Analysis Stage to the AnalysisFrame.
-        :param queue_size: The size of the ZeroMQ Queue for this Stage. The real size might be greater depending on the
-        tcp buffer size of the os.
-        :param next_stage: specify the name of the next stage. This parameter and the send() function can be used to
-        avoid hardcoded names of the next stage in stage functions.
-        :param concurrency: The type of concurrency. It can be either 'async' or 'process'
+        """
+
         :param method: A function which will be called with start_all_stages().
-        :param name: The name of the Stage. It can be used to address communication between the stages.
+        :param name: Name of the Stage. It can be used to address communication between the stages.
         :param replicas: Number of the Replicas of this stage.
+        :param concurrency: You can choose between 'process' and 'async'.
+               'process': Starts the in 'method' defined function as process.
+               'async': Starts the in 'method' defined function as a coroutine.
         :param args: A tuple of arguments which will be passed when the function is started.
-        :param backup_error_handler: A Error Handler Object which ensures thas the pipeline doesn't crash. 
-        Unsubmitted Reports get eventually lost, so it might be better to catch Exceptions inside the analysis module.
+        :param next_stage: Name of the default next stage. It is used for the
+               :func:`~mass_api_client.utils.multistaged_analysis.SyncSockets.send` function of
+               :class:`~mass_api_client.utils.multistaged_analysis.SyncSockets` or
+               :class:`~mass_api_client.utils.multistaged_analysis.AsyncSockets` Objects. It defines the next stage if no
+               'stage' parameter is defined.
+        :param queue_size: The minimum queue Size for this stage. Note that the actual queue size might be much greater.
+        :param backup_error_handler: A Error Handler Object which ensures thas the pipeline doesn't crash.
+               Unsubmitted Reports get eventually lost, so it might be better to catch Exceptions inside the analysis module.
         """
         self.address_dict[name] = {}
         out_address = 'ipc://' + self.ipc_path + str(self.ipc_name)
@@ -288,11 +346,12 @@ class AnalysisFrame:
             self.stages[name].append(new_stage)
 
     def start_all_stages(self):
-        """Starts all Stages of the AnalysisFrame.
+        """Starts all stages added with the
+        :func:`~mass_api_client.utils.multistaged_analysis.AnalysisFrame.add_stage` function.
 
         This function is blocking.
         """
-        self.start_streamer_workers()
+        self._start_streamer_workers()
         async_shared_sockets = AsyncSharedOutSockets(self.async_context, self.address_dict)
         coros = []
         processes = []
@@ -309,12 +368,15 @@ class AnalysisFrame:
                 if not p.is_alive():
                     sys.exit("Stage unexpectedly exited.")
 
-    def start_streamer_workers(self):
+    def _start_streamer_workers(self):
         for streamer in self.streamers:
             streamer.start_streamer()
 
 
 class StageObject:
+    """
+    This is a base Class to deliver Samples, MASS-Reports and messages between Stages.
+    """
     def __init__(self, json_report_objects=None, raw_report_objects=None, additional_metadata=None, tags=None,
                  analysis_date=None, failed=False, error_message=None):
         self.stage_report = {}
@@ -334,6 +396,18 @@ class StageObject:
             return None
 
     def get_stage_report(self, report_name):
+        """
+        Get a stage report of a specific stage.
+        Stage reports are not to be confused with MASS reports.
+
+        A stage report is a possibility to send data with the
+        :class:`~mass_api_client.utils.multistaged_analysis.StageObject` between stages.
+
+        :param report_name: The name of the stage report to get. If the stage report was created with
+                            :func:`~mass_api_client.utils.multistaged_analysis.StageObject.make_stage_report`
+                            it is the name of the stage which created the report.
+        :return: Returns the stage report or 'None' if no report with this name exists.
+        """
         if report_name in self.stage_report:
             return self.stage_report[report_name]
         else:
@@ -344,9 +418,37 @@ class StageObject:
         self.stage_report[report_name] = stage_report
 
     def make_stage_report(self, sockets, stage_report):
+        """
+
+        Get a stage report of a specific stage.
+
+        A stage report is a possibility to send data with the
+        :class:`~mass_api_client.utils.multistaged_analysis.StageObject` between stages.
+        Stage reports are not to be confused with MASS reports.
+
+        :param sockets: The :class:`~mass_api_client.utils.multistaged_analysis.SyncSockets` or
+                        :class:`~mass_api_client.utils.multistaged_analysis.AsyncSockets`
+                        object of this stage.
+        :param stage_report: The stage report to be sent.
+        """
         self.stage_report[sockets.name] = stage_report
 
     def report_json(self, sockets, report, report_name=None, subpress_stage_name=False):
+        """
+        This function can be used to create MASS-json-reports.
+
+        :param sockets: The :class:`~mass_api_client.utils.multistaged_analysis.SyncSockets` or
+                        :class:`~mass_api_client.utils.multistaged_analysis.AsyncSockets`
+                        object of this stage.
+        :param report: The report to be sent.
+        :param report_name: specify the name of the report.
+        :param subpress_stage_name: By default each json report is named by the name of the analysis stage.
+                                    Multiple reports per stage can be created by naming this reports with the
+                                    'report_name' parameter.
+                                    When you pass 'True' to this parameter, reports are created independently
+                                    from analysis stage name. You can specify the report name by the
+                                    'report_name' parameter.
+        """
         if not self.report['json_report_objects']:
             self.report['json_report_objects'] = {}
         if not subpress_stage_name:
@@ -365,28 +467,60 @@ class StageObject:
                     self.report['json_report_objects'][key] = report[key]
 
     def report_tag(self, tag_list):
+        """
+        This functino adds a list of Tags to the MASS report.
+        :param tag_list: A list of Tags.
+        """
         if not self.report['tags']:
             self.report['tags'] = []
         for tag in tag_list:
             self.report['tags'].append(tag)
 
     def report_failed(self, failed):
+        """
+        Sets the 'failed option' of the MASS report.
+        :param failed:
+        """
         self.report['failed'] = failed
 
     def report_raw_report_object(self, raw_report_objects):
+        """
+        Sets the raw report object of the MASS report.
+        :param raw_report_objects: The raw report object
+        """
         self.report['raw_report_objects'] = raw_report_objects
 
     def report_additional_metadata(self, additional_metadata):
+        """
+        Sets the additional metadata of the MASS report.
+        :param additional_metadata: The additional metadata.
+        """
         self.report['additional_metadata'] = additional_metadata
 
     def report_analysis_data(self, analysis_date):
+        """
+        Sets the analysis date of a the MASS report.
+        :param analysis_date: The analysis date.
+        """
         self.report['analysis_date'] = analysis_date
 
     def report_error_message(self, error_message):
+        """
+        Sets the error message of the MASS report.
+        :param error_message: The error message.
+        """
         self.report['error_message'] = error_message
 
 
 class RequestObject(StageObject):
+    """
+    This class keeps a sample and a analysis request.
+    Instances of this class can be used to get a analysis request and the corresponding sample from the MASS server,
+    process the analysis and report the results back to MASS.
+    It is meant to be used with stages based on the
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.get_requests` and
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.report` functions.
+    """
     def __init__(self, request, sample, json_report_objects=None, raw_report_objects=None,
                  additional_metadata=None, tags=None, analysis_date=None, failed=False, error_message=None):
         StageObject.__init__(self, json_report_objects, raw_report_objects, additional_metadata, tags, analysis_date,
@@ -396,6 +530,11 @@ class RequestObject(StageObject):
 
 
 class CreateSampleAndReportObject(StageObject):
+    """
+    Instances of this class can be used for analysis systems like the mass_ct_crawler wich create samples and
+    corresponding reports without analysis requests. It is meant to be used with staged based on the
+    :func:`~mass_api_client.utils.multistaged_analysis.miscellaneous.create_sample_and_report` function.
+    """
     def __init__(self, sample_uri=None, sample_domain=None, sample_port=None, sample_ipv4=None, sample_ipv6=None,
                  sample_filename=None, sample_file=None, sample_tlp_level=0, sample_tags=None,
                  report_json_report_objects=None, report_raw_report_objects=None,
