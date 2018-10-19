@@ -102,13 +102,13 @@ def _decode(byte_body, headers):
 
 
 async def get_http(sockets, error_handler=error_handling_async, parallel_requests=300, conn_timeout=60,
-                   stream_timeout=300):
+                   stream_timeout=300, post_timeout=60):
     async def fetch(url, args):
         resolver = AsyncResolver()
         async with ClientSession(loop=sockets.loop, timeout=ClientTimeout(total=None, sock_read=conn_timeout),
                              connector=TCPConnector(limit=parallel_requests, verify_ssl=False, resolver=resolver)) as session:
             if args['client_headers']:
-                await session.post(url, headers=args['client_headers'])
+                await session.post(url, headers=args['client_headers'], timeout=post_timeout)
             async with session.get(url, allow_redirects=True) as response:
                 raw_data = {}
                 if args['text']:
